@@ -1,0 +1,119 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SplitType {
+  EVEN
+  EXACT
+  ITEM
+}
+
+enum RecurrenceInterval {
+  WEEKLY
+  MONTHLY
+}
+
+model Group {
+  id           String   @id @default(cuid())
+  name         String
+  homeCurrency String
+  createdAt    DateTime @default(now())
+
+  people      Person[]
+  expenses    Expense[]
+  settlements Settlement[]
+}
+
+model Person {
+  id        String   @id @default(cuid())
+  groupId   String
+  group     Group    @relation(fields: [groupId], references: [id])
+  name      String
+  createdAt DateTime @default(now())
+
+  paidExpenses    ExpensePayer[]
+  owedExpenses    ExpenseParticipant[]
+  itemAssignments ExpenseItemAssignment[]
+  settlementsPaid     Settlement[] @relation("SettlementFrom")
+  settlementsReceived Settlement[] @relation("SettlementTo")
+}
+
+model Expense {
+  id                 String              @id @default(cuid())
+  groupId            String
+  group              Group               @relation(fields: [groupId], references: [id])
+  description        String
+  date               DateTime
+  category           String
+  currency           String
+  amount             Decimal
+  convertedAmount    Decimal
+  exchangeRate       Decimal
+  receiptUrl         String?
+  splitType          SplitType
+  isRecurring        Boolean             @default(false)
+  recurrenceInterval RecurrenceInterval?
+  nextOccurrenceDate DateTime?
+  createdAt          DateTime            @default(now())
+
+  payers       ExpensePayer[]
+  participants ExpenseParticipant[]
+  items        ExpenseItem[]
+}
+
+model ExpensePayer {
+  id         String  @id @default(cuid())
+  expenseId  String
+  expense    Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  personId   String
+  person     Person  @relation(fields: [personId], references: [id])
+  amountPaid Decimal
+}
+
+model ExpenseParticipant {
+  id         String  @id @default(cuid())
+  expenseId  String
+  expense    Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  personId   String
+  person     Person  @relation(fields: [personId], references: [id])
+  owedAmount Decimal
+}
+
+model ExpenseItem {
+  id          String  @id @default(cuid())
+  expenseId   String
+  expense     Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  description String
+  amount      Decimal
+
+  assignments ExpenseItemAssignment[]
+}
+
+model ExpenseItemAssignment {
+  id       String      @id @default(cuid())
+  itemId   String
+  item     ExpenseItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  personId String
+  person   Person      @relation(fields: [personId], references: [id])
+}
+
+model Settlement {
+  id           String   @id @default(cuid())
+  groupId      String
+  group        Group    @relation(fields: [groupId], references: [id])
+  fromPersonId String
+  fromPerson   Person   @relation("SettlementFrom", fields: [fromPersonId], references: [id])
+  toPersonId   String
+  toPerson     Person   @relation("SettlementTo", fields: [toPersonId], references: [id])
+  amount       Decimal
+  currency     String
+  date         DateTime @default(now())
+}

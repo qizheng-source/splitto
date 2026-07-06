@@ -1,0 +1,538 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import { createExpense, updateExpense } from "@/app/actions";
+import { ALL_CURRENCIES, EXPENSE_CATEGORIES } from "@/lib/currencies";
+import { toCents, fromCents } from "@/lib/money";
+import { splitEvenly } from "@/lib/splitting";
+
+type Person = { id: string; name: string };
+type SplitType = "EVEN" | "EXACT" | "ITEM";
+
+type PayerRow = { personId: string; amount: string };
+type ExactRow = { personId: string; included: boolean; amount: string; touched: boolean };
+type ItemRow = { description: string; amount: string; personIds: string[] };
+
+export type InitialExpenseValues = {
+  description: string;
+  date: string;
+  category: string;
+  customCategory: string;
+  currency: string;
+  splitType: SplitType;
+  amount: string;
+  payers: PayerRow[];
+  evenParticipantIds: string[];
+  exactRows: ExactRow[];
+  items: ItemRow[];
+  isRecurring: boolean;
+  recurrenceInterval: "WEEKLY" | "MONTHLY";
+};
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function AddExpenseForm({
+  groupId,
+  homeCurrency,
+  people,
+  expenseId,
+  initialValues,
+}: {
+  groupId: string;
+  homeCurrency: string;
+  people: Person[];
+  expenseId?: string;
+  initialValues?: InitialExpenseValues;
+}) {
+  const isEditing = Boolean(expenseId);
+
+  const [description, setDescription] = useState(initialValues?.description ?? "");
+  const [date, setDate] = useState(initialValues?.date ?? todayISO());
+  const [category, setCategory] = useState<string>(initialValues?.category ?? EXPENSE_CATEGORIES[0]);
+  const [customCategory, setCustomCategory] = useState(initialValues?.customCategory ?? "");
+  const [currency, setCurrency] = useState(initialValues?.currency ?? homeCurrency);
+  const [splitType, setSplitType] = useState<SplitType>(initialValues?.splitType ?? "EVEN");
+  const [amount, setAmount] = useState(initialValues?.amount ?? "");
+
+  const [payers, setPayers] = useState<PayerRow[]>(
+    initialValues?.payers ?? [{ personId: people[0]?.id ?? "", amount: "" }]
+  );
+
+  const [evenParticipantIds, setEvenParticipantIds] = useState<string[]>(
+    initialValues?.evenParticipantIds ?? people.map((p) => p.id)
+  );
+
+  const [exactRows, setExactRows] = useState<ExactRow[]>(
+    initialValues?.exactRows ??
+      people.map((p) => ({ personId: p.id, included: true, amount: "", touched: false }))
+  );
+
+  const [items, setItems] = useState<ItemRow[]>(
+    initialValues?.items ?? [{ description: "", amount: "", personIds: people.map((p) => p.id) }]
+  );
+
+  const [isRecurring, setIsRecurring] = useState(initialValues?.isRecurring ?? false);
+  const [recurrenceInterval, setRecurrenceInterval] = useState<"WEEKLY" | "MONTHLY">(
+    initialValues?.recurrenceInterval ?? "MONTHLY"
+  );
+
+  const totalCents = useMemo(() => {
+    if (splitType === "ITEM") {
+      return items.reduce((sum, item) => sum + (toCents(item.amount || "0") || 0), 0);
+    }
+    return toCents(amount || "0") || 0;
+  }, [splitType, items, amount]);
+
+  // A single payer must, by definition, have paid the full total — so that field
+  // is derived from the total rather than something the user needs to type.
+  const singlePayerAmount = payers.length === 1 ? fromCents(totalCents) : null;
+
+  const payersTotalCents = useMemo(
+    () =>
+      payers.reduce((sum, p) => sum + (toCents(singlePayerAmount ?? p.amount ?? "0") || 0), 0),
+    [payers, singlePayerAmount]
+  );
+
+  const payersMatch = totalCents > 0 && payersTotalCents === totalCents;
+
+  const evenShares = useMemo(
+    () => (evenParticipantIds.length > 0 ? splitEvenly(totalCents, evenParticipantIds) : {}),
+    [totalCents, evenParticipantIds]
+  );
+
+  // Exact split: anyone whose amount you haven't typed yet automatically absorbs
+  // an even share of whatever's left, so you only ever type the amounts you know
+  // and let the rest work itself out.
+  const exactRemainderCents = useMemo(() => {
+    const touchedCents = exactRows
+      .filter((r) => r.included && r.touched)
+      .reduce((sum, r) => sum + (toCents(r.amount || "0") || 0), 0);
+    return totalCents - touchedCents;
+  }, [exactRows, totalCents]);
+
+  const exactUntouchedIds = useMemo(
+    () => exactRows.filter((r) => r.included && !r.touched).map((r) => r.personId),
+    [exactRows]
+  );
+
+  const exactAutoShares = useMemo(
+    () =>
+      exactUntouchedIds.length > 0
+        ? splitEvenly(Math.max(exactRemainderCents, 0), exactUntouchedIds)
+        : {},
+    [exactUntouchedIds, exactRemainderCents]
+  );
+
+  function resolvedExactAmount(row: ExactRow): string {
+    return row.touched ? row.amount : fromCents(exactAutoShares[row.personId] ?? 0);
+  }
+
+  function addPayer() {
+    setPayers((prev) => [...prev, { personId: people[0]?.id ?? "", amount: "" }]);
+  }
+  function removePayer(index: number) {
+    setPayers((prev) => prev.filter((_, i) => i !== index));
+  }
+  function updatePayer(index: number, patch: Partial<PayerRow>) {
+    setPayers((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)));
+  }
+
+  function toggleEvenParticipant(personId: string) {
+    setEvenParticipantIds((prev) =>
+      prev.includes(personId) ? prev.filter((id) => id !== personId) : [...prev, personId]
+    );
+  }
+
+  function updateExactRow(personId: string, patch: Partial<ExactRow>) {
+    setExactRows((prev) => prev.map((r) => (r.personId === personId ? { ...r, ...patch } : r)));
+  }
+
+  function updateExactAmount(personId: string, value: string) {
+    updateExactRow(personId, { amount: value, touched: value !== "" });
+  }
+
+  function addItem() {
+    setItems((prev) => [...prev, { description: "", amount: "", personIds: people.map((p) => p.id) }]);
+  }
+  function removeItem(index: number) {
+    setItems((prev) => prev.filter((_, i) => i !== index));
+  }
+  function updateItem(index: number, patch: Partial<ItemRow>) {
+    setItems((prev) => prev.map((it, i) => (i === index ? { ...it, ...patch } : it)));
+  }
+  function toggleItemPerson(index: number, personId: string) {
+    setItems((prev) =>
+      prev.map((it, i) => {
+        if (i !== index) return it;
+        const personIds = it.personIds.includes(personId)
+          ? it.personIds.filter((id) => id !== personId)
+          : [...it.personIds, personId];
+        return { ...it, personIds };
+      })
+    );
+  }
+
+  const payersJson = JSON.stringify(
+    payers
+      .map((p) => ({ ...p, amount: singlePayerAmount ?? p.amount }))
+      .filter((p) => p.personId && p.amount)
+  );
+  const participantsJson = JSON.stringify(evenParticipantIds);
+  const exactJson = JSON.stringify(
+    exactRows
+      .filter((r) => r.included)
+      .map((r) => ({ personId: r.personId, amount: resolvedExactAmount(r) }))
+      .filter((r) => r.amount && r.amount !== "0.00")
+  );
+  const itemsJson = JSON.stringify(
+    items
+      .filter((it) => it.description && it.amount)
+      .map((it) => ({ description: it.description, amount: it.amount, personIds: it.personIds }))
+  );
+
+  return (
+    <form
+      action={isEditing ? updateExpense : createExpense}
+      className="flex w-full max-w-lg flex-col gap-6"
+    >
+      <input type="hidden" name="groupId" value={groupId} />
+      {isEditing && <input type="hidden" name="expenseId" value={expenseId} />}
+      <input type="hidden" name="payersJson" value={payersJson} />
+      <input type="hidden" name="participantsJson" value={participantsJson} />
+      <input type="hidden" name="exactJson" value={exactJson} />
+      <input type="hidden" name="itemsJson" value={itemsJson} />
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Description</label>
+        <input
+          name="description"
+          required
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="e.g. Dinner at the night market"
+          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date</label>
+          <input
+            type="date"
+            name="date"
+            required
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Currency</label>
+          <select
+            name="currency"
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value)}
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          >
+            {ALL_CURRENCIES.map((c) => (
+              <option key={c.code} value={c.code}>
+                {c.code}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Category</label>
+        <select
+          name="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        >
+          {EXPENSE_CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        {category === "Other" && (
+          <input
+            name="customCategory"
+            value={customCategory}
+            onChange={(e) => setCustomCategory(e.target.value)}
+            placeholder="Custom category name"
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          />
+        )}
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Split type</span>
+        <div className="flex gap-2">
+          {(["EVEN", "EXACT", "ITEM"] as SplitType[]).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() => setSplitType(type)}
+              className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium ${
+                splitType === type
+                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                  : "border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
+              }`}
+            >
+              {type === "EVEN" ? "Even" : type === "EXACT" ? "Exact amounts" : "Item-by-item"}
+            </button>
+          ))}
+        </div>
+      </div>
+      <input type="hidden" name="splitType" value={splitType} />
+
+      {(splitType === "EVEN" || splitType === "EXACT") && (
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Total amount</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            name="amount"
+            required
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          />
+        </div>
+      )}
+
+      {splitType === "EVEN" && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Split between</span>
+          <div className="flex flex-col gap-1">
+            {people.map((p) => {
+              const included = evenParticipantIds.includes(p.id);
+              return (
+                <label
+                  key={p.id}
+                  className="flex items-center justify-between gap-2 text-sm text-zinc-800 dark:text-zinc-200"
+                >
+                  <span className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={included}
+                      onChange={() => toggleEvenParticipant(p.id)}
+                    />
+                    {p.name}
+                  </span>
+                  {included && (
+                    <span className="text-zinc-500 dark:text-zinc-400">
+                      {fromCents(evenShares[p.id] ?? 0)} {currency}
+                    </span>
+                  )}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {splitType === "EXACT" && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Each person&apos;s share</span>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            Type amounts for the people you know exactly — anyone else automatically splits what&apos;s left.
+          </p>
+          <div className="flex flex-col gap-2">
+            {exactRows.map((row) => {
+              const person = people.find((p) => p.id === row.personId);
+              return (
+                <div key={row.personId} className="flex items-center gap-2">
+                  <label className="flex flex-1 items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
+                    <input
+                      type="checkbox"
+                      checked={row.included}
+                      onChange={(e) => updateExactRow(row.personId, { included: e.target.checked })}
+                    />
+                    {person?.name}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    disabled={!row.included}
+                    value={row.included ? resolvedExactAmount(row) : ""}
+                    onChange={(e) => updateExactAmount(row.personId, e.target.value)}
+                    className={`w-28 rounded-lg border px-3 py-1.5 text-sm outline-none focus:border-zinc-500 disabled:opacity-50 dark:bg-zinc-900 ${
+                      row.touched
+                        ? "border-zinc-300 text-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
+                        : "border-dashed border-zinc-300 text-zinc-400 dark:border-zinc-700 dark:text-zinc-500"
+                    }`}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <p
+            className={`text-sm ${
+              exactUntouchedIds.length === 0 && exactRemainderCents !== 0
+                ? "text-red-600"
+                : "text-zinc-500 dark:text-zinc-400"
+            }`}
+          >
+            {exactUntouchedIds.length === 0 && exactRemainderCents !== 0
+              ? `Amounts entered don't add up to the total (${exactRemainderCents > 0 ? "short by" : "over by"} ${fromCents(
+                  Math.abs(exactRemainderCents)
+                )} ${currency})`
+              : `Remaining to split automatically: ${fromCents(Math.max(exactRemainderCents, 0))} ${currency}`}
+          </p>
+        </div>
+      )}
+
+      {splitType === "ITEM" && (
+        <div className="flex flex-col gap-3">
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Line items</span>
+          {items.map((item, index) => (
+            <div key={index} className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+              <div className="flex gap-2">
+                <input
+                  placeholder="Item description"
+                  value={item.description}
+                  onChange={(e) => updateItem(index, { description: e.target.value })}
+                  className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                />
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Amount"
+                  value={item.amount}
+                  onChange={(e) => updateItem(index, { amount: e.target.value })}
+                  className="w-28 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                />
+                {items.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    className="rounded-lg border border-zinc-300 px-2 text-sm text-zinc-500 dark:border-zinc-700"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {people.map((p) => (
+                  <label key={p.id} className="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-300">
+                    <input
+                      type="checkbox"
+                      checked={item.personIds.includes(p.id)}
+                      onChange={() => toggleItemPerson(index, p.id)}
+                    />
+                    {p.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
+          <button
+            type="button"
+            onClick={addItem}
+            className="self-start text-sm font-medium text-zinc-700 underline underline-offset-2 dark:text-zinc-300"
+          >
+            + Add another item
+          </button>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Total: {(totalCents / 100).toFixed(2)} {currency}
+          </p>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Who paid</span>
+        <div className="flex flex-col gap-2">
+          {payers.map((payer, index) => (
+            <div key={index} className="flex gap-2">
+              <select
+                value={payer.personId}
+                onChange={(e) => updatePayer(index, { personId: e.target.value })}
+                className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              >
+                {people.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={singlePayerAmount ?? payer.amount}
+                disabled={singlePayerAmount !== null}
+                onChange={(e) => updatePayer(index, { amount: e.target.value })}
+                className="w-28 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 disabled:opacity-60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+              {payers.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removePayer(index)}
+                  className="rounded-lg border border-zinc-300 px-2 text-sm text-zinc-500 dark:border-zinc-700"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={addPayer}
+          className="self-start text-sm font-medium text-zinc-700 underline underline-offset-2 dark:text-zinc-300"
+        >
+          + Add another payer
+        </button>
+        <p className={`text-sm ${payersMatch ? "text-zinc-500 dark:text-zinc-400" : "text-red-600"}`}>
+          Paid so far: {(payersTotalCents / 100).toFixed(2)} / {(totalCents / 100).toFixed(2)} {currency}
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-lg border border-dashed border-zinc-300 p-4 dark:border-zinc-700">
+        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Receipt photo</span>
+        <input type="file" disabled className="text-sm text-zinc-400" />
+        <p className="text-xs text-zinc-400">Photo uploads are coming soon (Phase 8).</p>
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          <input
+            type="checkbox"
+            name="isRecurring"
+            checked={isRecurring}
+            onChange={(e) => setIsRecurring(e.target.checked)}
+          />
+          This expense repeats automatically
+        </label>
+        {isRecurring && (
+          <select
+            name="recurrenceInterval"
+            value={recurrenceInterval}
+            onChange={(e) => setRecurrenceInterval(e.target.value as "WEEKLY" | "MONTHLY")}
+            className="w-40 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          >
+            <option value="WEEKLY">Weekly</option>
+            <option value="MONTHLY">Monthly</option>
+          </select>
+        )}
+      </div>
+
+      <button
+        type="submit"
+        disabled={!payersMatch}
+        className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+      >
+        {isEditing ? "Save changes" : "Add expense"}
+      </button>
+    </form>
+  );
+}
