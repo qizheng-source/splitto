@@ -367,6 +367,9 @@ export function AddExpenseForm({
                     disabled={!row.included}
                     value={row.included ? resolvedExactAmount(row) : ""}
                     onChange={(e) => updateExactAmount(row.personId, e.target.value)}
+                    onBlur={() => {
+                      if (row.amount === "") updateExactRow(row.personId, { touched: false });
+                    }}
                     className={`w-28 rounded-lg border px-3 py-1.5 text-sm outline-none focus:border-zinc-500 disabled:opacity-50 dark:bg-zinc-900 ${
                       row.touched
                         ? "border-zinc-300 text-zinc-900 dark:border-zinc-700 dark:text-zinc-100"
