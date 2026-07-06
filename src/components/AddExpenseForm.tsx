@@ -27,6 +27,7 @@ export type InitialExpenseValues = {
   items: ItemRow[];
   isRecurring: boolean;
   recurrenceInterval: "WEEKLY" | "MONTHLY";
+  receiptUrl: string | null;
 };
 
 function todayISO() {
@@ -77,6 +78,9 @@ export function AddExpenseForm({
   const [recurrenceInterval, setRecurrenceInterval] = useState<"WEEKLY" | "MONTHLY">(
     initialValues?.recurrenceInterval ?? "MONTHLY"
   );
+
+  const [existingReceiptUrl] = useState(initialValues?.receiptUrl ?? "");
+  const [receiptPreview, setReceiptPreview] = useState<string | null>(initialValues?.receiptUrl ?? null);
 
   const totalCents = useMemo(() => {
     if (splitType === "ITEM") {
@@ -506,8 +510,25 @@ export function AddExpenseForm({
 
       <div className="flex flex-col gap-2 rounded-lg border border-dashed border-zinc-300 p-4 dark:border-zinc-700">
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Receipt photo</span>
-        <input type="file" disabled className="text-sm text-zinc-400" />
-        <p className="text-xs text-zinc-400">Photo uploads are coming soon (Phase 8).</p>
+        <input type="hidden" name="existingReceiptUrl" value={existingReceiptUrl} />
+        <input
+          type="file"
+          name="receipt"
+          accept="image/*"
+          className="text-sm text-zinc-600 dark:text-zinc-400"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            setReceiptPreview(file ? URL.createObjectURL(file) : (initialValues?.receiptUrl ?? null));
+          }}
+        />
+        {receiptPreview && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={receiptPreview}
+            alt="Receipt preview"
+            className="mt-1 max-h-40 w-auto rounded-lg border border-zinc-200 object-contain dark:border-zinc-700"
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-2">

@@ -173,6 +173,16 @@ export default async function GroupPage({
                             Paid by {expense.payers.map((p) => p.person.name).join(", ")}
                           </span>
                         </div>
+                        {expense.receiptUrl && (
+                          <a
+                            href={expense.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                          >
+                            View receipt
+                          </a>
+                        )}
                       </li>
                     ))}
                   </ul>

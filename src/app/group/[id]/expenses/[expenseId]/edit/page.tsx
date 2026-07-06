@@ -58,6 +58,7 @@ export default async function EditExpensePage({
     })),
     isRecurring: expense.isRecurring,
     recurrenceInterval: expense.recurrenceInterval ?? "MONTHLY",
+    receiptUrl: expense.receiptUrl,
   };
 
   return (

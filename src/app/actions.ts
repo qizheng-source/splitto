@@ -7,6 +7,7 @@ import { toCents, fromCents } from "@/lib/money";
 import { splitEvenly, splitItemsAmongAssignees } from "@/lib/splitting";
 import { computeNextOccurrence } from "@/lib/recurring";
 import { getExchangeRate } from "@/lib/exchangeRate";
+import { put } from "@vercel/blob";
 import type { SplitType, RecurrenceInterval } from "@/generated/prisma/client";
 
 export async function createGroup(formData: FormData) {
@@ -146,8 +147,20 @@ async function parseExpenseForm(formData: FormData) {
   const exchangeRate = await getExchangeRate(currency, group.homeCurrency);
   const convertedCents = Math.round(totalCents * exchangeRate);
 
+  const receiptFile = formData.get("receipt");
+  const existingReceiptUrl = String(formData.get("existingReceiptUrl") ?? "");
+  let receiptUrl = existingReceiptUrl || null;
+  if (receiptFile instanceof File && receiptFile.size > 0) {
+    const blob = await put(`receipts/${receiptFile.name}`, receiptFile, {
+      access: "public",
+      addRandomSuffix: true,
+    });
+    receiptUrl = blob.url;
+  }
+
   return {
     groupId,
+    receiptUrl,
     description,
     date,
     category,
@@ -188,6 +201,7 @@ export async function createExpense(formData: FormData) {
       amount: parsed.amount,
       convertedAmount: parsed.convertedAmount,
       exchangeRate: parsed.exchangeRate,
+      receiptUrl: parsed.receiptUrl,
       splitType: parsed.splitType,
       isRecurring: parsed.isRecurring,
       recurrenceInterval: parsed.recurrenceInterval,
@@ -228,6 +242,7 @@ export async function updateExpense(formData: FormData) {
       amount: parsed.amount,
       convertedAmount: parsed.convertedAmount,
       exchangeRate: parsed.exchangeRate,
+      receiptUrl: parsed.receiptUrl,
       splitType: parsed.splitType,
       isRecurring: parsed.isRecurring,
       recurrenceInterval: parsed.recurrenceInterval,
