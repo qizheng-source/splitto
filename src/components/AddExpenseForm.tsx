@@ -150,7 +150,10 @@ export function AddExpenseForm({
   }
 
   function updateExactAmount(personId: string, value: string) {
-    updateExactRow(personId, { amount: value, touched: value !== "" });
+    // Once a field is being edited it stays "yours" even if briefly empty
+    // while retyping — it must never snap back to the auto-filled value,
+    // or clearing it to type a fresh number becomes impossible.
+    updateExactRow(personId, { amount: value, touched: true });
   }
 
   function addItem() {
