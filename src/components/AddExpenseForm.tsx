@@ -365,7 +365,8 @@ export function AddExpenseForm({
                     step="0.01"
                     min="0"
                     disabled={!row.included}
-                    value={row.included ? resolvedExactAmount(row) : ""}
+                    value={row.touched ? row.amount : ""}
+                    placeholder={row.touched ? undefined : fromCents(exactAutoShares[row.personId] ?? 0)}
                     onChange={(e) => updateExactAmount(row.personId, e.target.value)}
                     onBlur={() => {
                       if (row.amount === "") updateExactRow(row.personId, { touched: false });
