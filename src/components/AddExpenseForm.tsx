@@ -202,7 +202,7 @@ export function AddExpenseForm({
   return (
     <form
       action={isEditing ? updateExpense : createExpense}
-      className="flex w-full max-w-lg flex-col gap-6"
+      className="flex w-full max-w-lg flex-col gap-4 sm:gap-6"
     >
       <input type="hidden" name="groupId" value={groupId} />
       {isEditing && <input type="hidden" name="expenseId" value={expenseId} />}
@@ -223,7 +223,7 @@ export function AddExpenseForm({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Date</label>
           <input
@@ -245,7 +245,7 @@ export function AddExpenseForm({
           >
             {ALL_CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.code}
+                {c.flag} {c.code}
               </option>
             ))}
           </select>

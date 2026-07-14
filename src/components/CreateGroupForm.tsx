@@ -49,14 +49,14 @@ export function CreateGroupForm() {
           <optgroup label="Common">
             {PINNED_CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.code} — {c.name}
+                {c.flag} {c.code} — {c.name}
               </option>
             ))}
           </optgroup>
           <optgroup label="Other">
             {OTHER_CURRENCIES.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.code} — {c.name}
+                {c.flag} {c.code} — {c.name}
               </option>
             ))}
           </optgroup>
