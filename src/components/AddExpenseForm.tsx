@@ -40,12 +40,14 @@ export function AddExpenseForm({
   people,
   expenseId,
   initialValues,
+  defaultCurrency,
 }: {
   groupId: string;
   homeCurrency: string;
   people: Person[];
   expenseId?: string;
   initialValues?: InitialExpenseValues;
+  defaultCurrency?: string;
 }) {
   const isEditing = Boolean(expenseId);
 
@@ -53,7 +55,7 @@ export function AddExpenseForm({
   const [date, setDate] = useState(initialValues?.date ?? todayISO());
   const [category, setCategory] = useState<string>(initialValues?.category ?? EXPENSE_CATEGORIES[0]);
   const [customCategory, setCustomCategory] = useState(initialValues?.customCategory ?? "");
-  const [currency, setCurrency] = useState(initialValues?.currency ?? homeCurrency);
+  const [currency, setCurrency] = useState(initialValues?.currency ?? defaultCurrency ?? homeCurrency);
   const [splitType, setSplitType] = useState<SplitType>(initialValues?.splitType ?? "EVEN");
   const [amount, setAmount] = useState(initialValues?.amount ?? "");
 

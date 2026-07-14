@@ -30,6 +30,8 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - Multi-currency support per group/expense (Tricount-style, useful for travel)
 - DECIDED: Priority currencies are SGD plus common destinations for Singaporean travelers/workers (e.g. MYR, THB, IDR, JPY, KRW, AUD, VND, CNY, HKD, TWD, GBP, EUR, USD). Full global list still available, but these are pinned/quick-pick defaults.
 - DECIDED: Live exchange rates auto-fetched at the time an expense is logged, used to convert into the group's home currency for totals.
+- DECIDED: The currency picker on "Add expense" defaults to whichever currency was used most recently in that group (not always the home currency) — e.g. after the first MYR expense on a trip, it keeps defaulting to MYR.
+- DECIDED: Currency dropdowns show a country flag next to each code for faster visual scanning.
 
 ## 5. Privacy & Data Storage
 - No data selling, no ads (Spliit-style)
