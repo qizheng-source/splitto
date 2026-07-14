@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createExpense, updateExpense } from "@/app/actions";
 import { ALL_CURRENCIES, EXPENSE_CATEGORIES } from "@/lib/currencies";
 import { toCents, fromCents } from "@/lib/money";
@@ -32,6 +32,12 @@ export type InitialExpenseValues = {
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
+}
+
+// Which person paid is remembered per-device (localStorage), not in the shared
+// database — there are no accounts, so "who am I" is only ever known per browser.
+function lastPayerKey(groupId: string) {
+  return `splitto:lastPayer:${groupId}`;
 }
 
 export function AddExpenseForm({
@@ -80,6 +86,21 @@ export function AddExpenseForm({
   const [recurrenceInterval, setRecurrenceInterval] = useState<"WEEKLY" | "MONTHLY">(
     initialValues?.recurrenceInterval ?? "MONTHLY"
   );
+
+  // Apply this device's remembered payer once, after mount. localStorage only
+  // exists in the browser, so this can't be computed during the initial render
+  // without mismatching the server-rendered HTML — it must happen in an effect.
+  useEffect(() => {
+    if (isEditing) return;
+    const remembered = localStorage.getItem(lastPayerKey(groupId));
+    if (remembered && people.some((p) => p.id === remembered)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setPayers((prev) =>
+        prev.length === 1 ? [{ ...prev[0], personId: remembered }] : prev
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [existingReceiptUrl] = useState(initialValues?.receiptUrl ?? "");
   const [receiptPreview, setReceiptPreview] = useState<string | null>(initialValues?.receiptUrl ?? null);
@@ -143,6 +164,9 @@ export function AddExpenseForm({
   }
   function updatePayer(index: number, patch: Partial<PayerRow>) {
     setPayers((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)));
+    if (patch.personId) {
+      localStorage.setItem(lastPayerKey(groupId), patch.personId);
+    }
   }
 
   function toggleEvenParticipant(personId: string) {

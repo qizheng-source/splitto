@@ -9,6 +9,7 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - Support both quick entry (even split) and detailed entry (item-by-item)
 - DECIDED: Support photo/receipt attachments on an expense.
 - DECIDED: Support recurring expenses (e.g. monthly rent, subscriptions) that repeat automatically.
+- DECIDED: The "who paid" field remembers the last person selected on that specific device (via local browser storage, not the shared database) and defaults to them next time — since there are no accounts, each person's own phone naturally defaults to themself.
 
 ## 2. Splitting Logic
 - Even split across selected participants
