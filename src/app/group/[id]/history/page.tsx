@@ -48,10 +48,43 @@ export default async function HistoryPage({
     },
   });
 
+  // Settlements aren't spending (no category), so they're excluded from the
+  // list only when a category filter is active, and never affect the charts.
+  const settlementsWhere: Prisma.SettlementWhereInput = { groupId: group.id };
+  if (filters.from || filters.to) {
+    settlementsWhere.date = {
+      ...(filters.from ? { gte: new Date(filters.from) } : {}),
+      ...(filters.to ? { lte: new Date(filters.to) } : {}),
+    };
+  }
+  if (filters.personId) {
+    settlementsWhere.OR = [{ fromPersonId: filters.personId }, { toPersonId: filters.personId }];
+  }
+  const settlements = filters.category
+    ? []
+    : await prisma.settlement.findMany({
+        where: settlementsWhere,
+        orderBy: [{ date: "desc" }, { id: "desc" }],
+        include: { fromPerson: true, toPerson: true },
+      });
+
   const categoryTotals = totalsByCategory(expenses);
   const personTotals = totalsByPerson(expenses);
   const dayTotals = totalsByDay(expenses);
   const totalCents = expenses.reduce((sum, e) => sum + toCents(e.convertedAmount.toString()), 0);
+
+  type Transaction =
+    | { type: "expense"; date: Date; expense: (typeof expenses)[number] }
+    | { type: "settlement"; date: Date; settlement: (typeof settlements)[number] };
+
+  const transactions: Transaction[] = [
+    ...expenses.map((expense): Transaction => ({ type: "expense", date: expense.date, expense })),
+    ...settlements.map((settlement): Transaction => ({
+      type: "settlement",
+      date: settlement.date,
+      settlement,
+    })),
+  ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
   const hasFilters = Boolean(filters.personId || filters.category || filters.from || filters.to);
 
@@ -165,33 +198,58 @@ export default async function HistoryPage({
 
         <div className="flex flex-col gap-2">
           <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Matching expenses
+            Transactions
           </span>
-          {expenses.length === 0 ? (
-            <p className="text-sm text-zinc-400 dark:text-zinc-600">No expenses match these filters.</p>
+          {transactions.length === 0 ? (
+            <p className="text-sm text-zinc-400 dark:text-zinc-600">Nothing matches these filters.</p>
           ) : (
             <ul className="flex flex-col gap-2">
-              {expenses.map((expense) => (
-                <li
-                  key={expense.id}
-                  className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm dark:border-zinc-800 dark:bg-zinc-900"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                      {expense.description}
-                    </span>
-                    <span className="text-zinc-700 dark:text-zinc-300">
-                      {formatMoney(expense.amount.toString())} {expense.currency}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                    <span>
-                      {expense.date.toLocaleDateString()} · {expense.category}
-                    </span>
-                    <span>Paid by {expense.payers.map((p) => p.person.name).join(", ")}</span>
-                  </div>
-                </li>
-              ))}
+              {transactions.map((tx) =>
+                tx.type === "expense" ? (
+                  <li key={`expense-${tx.expense.id}`}>
+                    <Link
+                      href={`/group/${group.id}/expenses/${tx.expense.id}`}
+                      className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                          {tx.expense.description}
+                        </span>
+                        <span className="text-zinc-700 dark:text-zinc-300">
+                          {formatMoney(tx.expense.amount.toString())} {tx.expense.currency}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                        <span>
+                          {tx.expense.date.toLocaleDateString()} · {tx.expense.category}
+                        </span>
+                        <span>
+                          Paid by {tx.expense.payers.map((p) => p.person.name).join(", ")}
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                ) : (
+                  <li key={`settlement-${tx.settlement.id}`}>
+                    <Link
+                      href={`/group/${group.id}/settlements/${tx.settlement.id}`}
+                      className="flex flex-col gap-1 rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-3 text-sm hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                          {tx.settlement.fromPerson.name} → {tx.settlement.toPerson.name}
+                        </span>
+                        <span className="text-zinc-700 dark:text-zinc-300">
+                          {formatMoney(tx.settlement.amount.toString())} {tx.settlement.currency}
+                        </span>
+                      </div>
+                      <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                        {tx.settlement.date.toLocaleDateString()} · Settlement
+                      </div>
+                    </Link>
+                  </li>
+                )
+              )}
             </ul>
           )}
         </div>

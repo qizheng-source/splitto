@@ -67,6 +67,46 @@ export async function recordSettlement(formData: FormData) {
 
   revalidatePath(`/group/${groupId}`);
   revalidatePath(`/group/${groupId}/settle`);
+  revalidatePath(`/group/${groupId}/history`);
+}
+
+export async function updateSettlement(formData: FormData) {
+  const settlementId = String(formData.get("settlementId") ?? "");
+  const groupId = String(formData.get("groupId") ?? "");
+  const fromPersonId = String(formData.get("fromPersonId") ?? "");
+  const toPersonId = String(formData.get("toPersonId") ?? "");
+  const amount = String(formData.get("amount") ?? "");
+  const dateInput = String(formData.get("date") ?? "");
+
+  if (!settlementId || !groupId || !fromPersonId || !toPersonId || !amount || !dateInput) {
+    throw new Error("Missing required settlement fields.");
+  }
+
+  await prisma.settlement.update({
+    where: { id: settlementId },
+    data: { fromPersonId, toPersonId, amount, date: new Date(dateInput) },
+  });
+
+  revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/settle`);
+  revalidatePath(`/group/${groupId}/history`);
+  redirect(`/group/${groupId}/history`);
+}
+
+export async function deleteSettlement(formData: FormData) {
+  const settlementId = String(formData.get("settlementId") ?? "");
+  const groupId = String(formData.get("groupId") ?? "");
+
+  if (!settlementId || !groupId) {
+    throw new Error("Missing settlement id.");
+  }
+
+  await prisma.settlement.delete({ where: { id: settlementId } });
+
+  revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/settle`);
+  revalidatePath(`/group/${groupId}/history`);
+  redirect(`/group/${groupId}/history`);
 }
 
 type PayerInput = { personId: string; amount: string };

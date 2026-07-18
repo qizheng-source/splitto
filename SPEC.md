@@ -16,6 +16,7 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - Item-level split (assign specific items to specific people)
 - DECIDED: Also support exact-amount split (manually type how much each person owes)
 - DECIDED: Automatic debt simplification — minimizes the number of payments needed to settle up a group, rather than showing every individual per-expense IOU.
+- DECIDED: Past settlements ("Mark as paid") show up in the History timeline alongside expenses (visually distinguished, excluded from spending charts/totals since they aren't spending), each with its own detail page and Edit/Delete.
 - DECIDED: Even split shows each included person's computed dollar share live, not just a checkbox.
 - DECIDED: With a single payer, the "amount paid" field auto-fills and locks to the total (no retyping). With multiple payers, each amount is entered manually.
 - DECIDED: Exact-amount split — anyone whose amount hasn't been typed in yet automatically absorbs an even share of whatever's left of the total, recalculating live as amounts are typed for others.
