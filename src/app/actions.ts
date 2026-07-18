@@ -277,4 +277,5 @@ export async function deleteExpense(formData: FormData) {
   await prisma.expense.delete({ where: { id: expenseId } });
 
   revalidatePath(`/group/${groupId}`);
+  redirect(`/group/${groupId}`);
 }

@@ -5,7 +5,6 @@ import { ShareLinkBox } from "@/components/ShareLinkBox";
 import { generateDueRecurringExpenses } from "@/lib/recurring";
 import { addParticipant } from "@/app/actions";
 import { formatMoney } from "@/lib/money";
-import { ExpenseActionsMenu } from "@/components/ExpenseActionsMenu";
 
 export default async function GroupPage({
   params,
@@ -140,49 +139,38 @@ export default async function GroupPage({
                   <span className="text-xs font-medium text-zinc-400 dark:text-zinc-600">{dateLabel}</span>
                   <ul className="flex flex-col gap-2">
                     {dayExpenses.map((expense) => (
-                      <li
-                        key={expense.id}
-                        className="relative flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white py-3 pl-4 pr-8 text-sm dark:border-zinc-800 dark:bg-zinc-900"
-                      >
-                        <div className="absolute right-2 top-2">
-                          <ExpenseActionsMenu groupId={group.id} expenseId={expense.id} />
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                            {expense.description}
-                          </span>
-                          <span className="text-zinc-700 dark:text-zinc-300">
-                            {formatMoney(expense.amount.toString())} {expense.currency}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                          <span>
-                            {expense.createdAt.toLocaleTimeString(undefined, {
-                              hour: "numeric",
-                              minute: "2-digit",
-                            })}{" "}
-                            · {expense.category}
-                            {expense.isRecurring
-                              ? ` · repeats ${expense.recurrenceInterval?.toLowerCase()}`
-                              : ""}
-                            {expense.currency !== group.homeCurrency
-                              ? ` · ${formatMoney(expense.convertedAmount.toString())} ${group.homeCurrency}`
-                              : ""}
-                          </span>
-                          <span>
-                            Paid by {expense.payers.map((p) => p.person.name).join(", ")}
-                          </span>
-                        </div>
-                        {expense.receiptUrl && (
-                          <a
-                            href={expense.receiptUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-xs font-medium text-zinc-500 underline underline-offset-2 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-                          >
-                            View receipt
-                          </a>
-                        )}
+                      <li key={expense.id}>
+                        <Link
+                          href={`/group/${group.id}/expenses/${expense.id}`}
+                          className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                              {expense.description}
+                            </span>
+                            <span className="text-zinc-700 dark:text-zinc-300">
+                              {formatMoney(expense.amount.toString())} {expense.currency}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                            <span>
+                              {expense.createdAt.toLocaleTimeString(undefined, {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}{" "}
+                              · {expense.category}
+                              {expense.isRecurring
+                                ? ` · repeats ${expense.recurrenceInterval?.toLowerCase()}`
+                                : ""}
+                              {expense.currency !== group.homeCurrency
+                                ? ` · ${formatMoney(expense.convertedAmount.toString())} ${group.homeCurrency}`
+                                : ""}
+                            </span>
+                            <span>
+                              Paid by {expense.payers.map((p) => p.person.name).join(", ")}
+                            </span>
+                          </div>
+                        </Link>
                       </li>
                     ))}
                   </ul>
