@@ -97,6 +97,12 @@ export default async function GroupPage({
           >
             + Add expense
           </Link>
+          <a
+            href="#add-people"
+            className="flex-1 rounded-lg border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            + Add person
+          </a>
           <Link
             href={`/group/${group.id}/settle`}
             className="flex-1 rounded-lg border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
@@ -181,7 +187,10 @@ export default async function GroupPage({
           )}
         </div>
 
-        <details className="group flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+        <details
+          id="add-people"
+          className="group flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
+        >
           <summary className="cursor-pointer text-sm font-medium text-zinc-700 dark:text-zinc-300">
             + Add people · Share link
           </summary>
