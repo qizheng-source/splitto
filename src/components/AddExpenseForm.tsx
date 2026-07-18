@@ -470,9 +470,16 @@ export function AddExpenseForm({
           <div className="flex flex-col gap-2">
             {shareRows.map((row) => {
               const person = people.find((p) => p.id === row.personId);
+              const step = (delta: number) =>
+                updateShareRow(row.personId, {
+                  shares: Math.max(0.5, Math.round((row.shares + delta) * 2) / 2),
+                });
               return (
-                <div key={row.personId} className="flex items-center gap-2">
-                  <label className="flex flex-1 items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
+                <div
+                  key={row.personId}
+                  className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-2 dark:border-zinc-800"
+                >
+                  <label className="flex items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
                     <input
                       type="checkbox"
                       checked={row.included}
@@ -480,22 +487,49 @@ export function AddExpenseForm({
                     />
                     {person?.name}
                   </label>
-                  <input
-                    type="number"
-                    step="1"
-                    min="1"
-                    disabled={!row.included}
-                    value={row.shares}
-                    onChange={(e) =>
-                      updateShareRow(row.personId, { shares: Math.max(1, Number(e.target.value) || 1) })
-                    }
-                    className="w-16 rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-center text-sm text-zinc-900 outline-none focus:border-zinc-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                  />
-                  {row.included && (
-                    <span className="w-20 text-right text-sm text-zinc-500 dark:text-zinc-400">
-                      {fromCents(shareAmounts[row.personId] ?? 0)} {currency}
-                    </span>
-                  )}
+                  <div className="flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      disabled={!row.included}
+                      onClick={() => step(-0.5)}
+                      className="rounded-lg border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-700 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
+                    >
+                      −
+                    </button>
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        step="any"
+                        min="0"
+                        disabled={!row.included}
+                        value={row.shares}
+                        onChange={(e) => {
+                          const value = Math.max(0, Number(e.target.value) || 0);
+                          // Typing 0 is a quick way to drop someone from the split,
+                          // same as unchecking them — no separate tap needed.
+                          updateShareRow(row.personId, {
+                            shares: value,
+                            included: value > 0 ? row.included : false,
+                          });
+                        }}
+                        className="w-14 rounded-lg border border-zinc-300 bg-white px-2 py-1 text-center text-sm text-zinc-900 outline-none focus:border-zinc-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                      />
+                      <span className="text-sm text-zinc-500 dark:text-zinc-400">x</span>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!row.included}
+                      onClick={() => step(0.5)}
+                      className="rounded-lg border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-700 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
+                    >
+                      +
+                    </button>
+                    {row.included && (
+                      <span className="w-20 text-right text-sm text-zinc-500 dark:text-zinc-400">
+                        {fromCents(shareAmounts[row.personId] ?? 0)} {currency}
+                      </span>
+                    )}
+                  </div>
                 </div>
               );
             })}
