@@ -48,6 +48,7 @@ export async function addParticipant(formData: FormData) {
   });
 
   revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/people/new`);
 }
 
 export async function recordSettlement(formData: FormData) {

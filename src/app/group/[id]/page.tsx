@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { ShareLinkBox } from "@/components/ShareLinkBox";
 import { generateDueRecurringExpenses } from "@/lib/recurring";
-import { addParticipant } from "@/app/actions";
 import { formatMoney } from "@/lib/money";
 
 export default async function GroupPage({
@@ -97,12 +96,12 @@ export default async function GroupPage({
           >
             + Add expense
           </Link>
-          <a
-            href="#add-people"
+          <Link
+            href={`/group/${group.id}/people/new`}
             className="flex-1 rounded-lg border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
           >
             + Add person
-          </a>
+          </Link>
           <Link
             href={`/group/${group.id}/settle`}
             className="flex-1 rounded-lg border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
@@ -187,12 +186,9 @@ export default async function GroupPage({
           )}
         </div>
 
-        <details
-          id="add-people"
-          className="group flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900"
-        >
+        <details className="group flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
           <summary className="cursor-pointer text-sm font-medium text-zinc-700 dark:text-zinc-300">
-            + Add people · Share link
+            Participants · Share link
           </summary>
           <div className="mt-3 flex flex-col gap-4">
             <ShareLinkBox url={shareUrl} />
@@ -211,22 +207,6 @@ export default async function GroupPage({
                   </li>
                 ))}
               </ul>
-              <form action={addParticipant} className="flex gap-2">
-                <input type="hidden" name="groupId" value={group.id} />
-                <input
-                  type="text"
-                  name="name"
-                  required
-                  placeholder="Add a person"
-                  className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-                />
-                <button
-                  type="submit"
-                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-                >
-                  Add
-                </button>
-              </form>
             </div>
           </div>
         </details>

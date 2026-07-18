@@ -470,10 +470,14 @@ export function AddExpenseForm({
           <div className="flex flex-col gap-2">
             {shareRows.map((row) => {
               const person = people.find((p) => p.id === row.personId);
-              const step = (delta: number) =>
+              const step = (delta: number) => {
+                const nextShares = Math.max(0, row.shares + delta);
+                // Same rule as typing 0 directly: dropping to zero unticks them too.
                 updateShareRow(row.personId, {
-                  shares: Math.max(0.5, Math.round((row.shares + delta) * 2) / 2),
+                  shares: nextShares,
+                  included: nextShares > 0 ? row.included : false,
                 });
+              };
               return (
                 <div
                   key={row.personId}
@@ -491,7 +495,7 @@ export function AddExpenseForm({
                     <button
                       type="button"
                       disabled={!row.included}
-                      onClick={() => step(-0.5)}
+                      onClick={() => step(-1)}
                       className="rounded-lg border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-700 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
                     >
                       −
@@ -519,7 +523,7 @@ export function AddExpenseForm({
                     <button
                       type="button"
                       disabled={!row.included}
-                      onClick={() => step(0.5)}
+                      onClick={() => step(1)}
                       className="rounded-lg border border-zinc-300 px-3 py-1 text-sm font-medium text-zinc-700 disabled:opacity-40 dark:border-zinc-700 dark:text-zinc-300"
                     >
                       +
