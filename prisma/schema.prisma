@@ -14,6 +14,7 @@ enum SplitType {
   EVEN
   EXACT
   ITEM
+  SHARES
 }
 
 enum RecurrenceInterval {

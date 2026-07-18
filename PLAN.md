@@ -72,7 +72,7 @@ Status: APPROVED (2026-07-05).
 ## Out of scope for v1 (can revisit later)
 - Optional user accounts / cross-device group sync
 - Native mobile app
-- Percentage-based or shares/weights-based splitting
+- Percentage-based splitting (whole-number shares split was added post-launch — see SPEC.md §2)
 
 ---
 ## Notes

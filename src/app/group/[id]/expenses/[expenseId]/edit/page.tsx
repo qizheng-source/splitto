@@ -51,6 +51,14 @@ export default async function EditExpensePage({
         touched: Boolean(participant),
       };
     }),
+    // Shares aren't stored (only the resulting dollar amount is), so editing a
+    // shares-split expense resets everyone to 1 share each — same starting
+    // point as a fresh expense, just with the previous participants pre-checked.
+    shareRows: group.people.map((person) => ({
+      personId: person.id,
+      included: expense.participants.some((p) => p.personId === person.id),
+      shares: 1,
+    })),
     items: expense.items.map((item) => ({
       description: item.description,
       amount: formatMoney(item.amount.toString()),

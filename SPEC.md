@@ -20,6 +20,7 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - DECIDED: Even split shows each included person's computed dollar share live, not just a checkbox.
 - DECIDED: With a single payer, the "amount paid" field auto-fills and locks to the total (no retyping). With multiple payers, each amount is entered manually.
 - DECIDED: Exact-amount split — anyone whose amount hasn't been typed in yet automatically absorbs an even share of whatever's left of the total, recalculating live as amounts are typed for others.
+- DECIDED: Whole-number "shares" split (e.g. 2 shares for an adult, 1 for a kid) — originally deferred as out of scope, added back post-launch. Percentage-based splitting remains out of scope.
 
 ## 3. Group & Sharing
 - Create a group with zero mandatory account creation (Tricount-style)

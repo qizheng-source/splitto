@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { toCents, fromCents } from "@/lib/money";
-import { splitEvenly, splitItemsAmongAssignees } from "@/lib/splitting";
+import { splitEvenly, splitItemsAmongAssignees, distributeProportionally } from "@/lib/splitting";
 import { computeNextOccurrence } from "@/lib/recurring";
 import { getExchangeRate } from "@/lib/exchangeRate";
 import { put } from "@vercel/blob";
@@ -112,6 +112,7 @@ export async function deleteSettlement(formData: FormData) {
 type PayerInput = { personId: string; amount: string };
 type ExactShareInput = { personId: string; amount: string };
 type ItemInput = { description: string; amount: string; personIds: string[] };
+type ShareInput = { personId: string; shares: number };
 
 async function parseExpenseForm(formData: FormData) {
   const groupId = String(formData.get("groupId") ?? "");
@@ -163,6 +164,20 @@ async function parseExpenseForm(formData: FormData) {
     for (const s of exactShares) {
       participantShares[s.personId] = toCents(s.amount);
     }
+  } else if (splitType === "SHARES") {
+    const shareInputs: ShareInput[] = JSON.parse(String(formData.get("sharesJson") ?? "[]"));
+    if (shareInputs.length === 0) {
+      throw new Error("At least one participant is required for a shares split.");
+    }
+    totalCents = toCents(String(formData.get("amount") ?? "0"));
+    const distributed = distributeProportionally(
+      totalCents,
+      shareInputs.map((s) => s.shares)
+    );
+    participantShares = {};
+    shareInputs.forEach((s, i) => {
+      participantShares[s.personId] = distributed[i];
+    });
   } else {
     const participantIds: string[] = JSON.parse(String(formData.get("participantsJson") ?? "[]"));
     if (participantIds.length === 0) {

@@ -4,14 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { createExpense, updateExpense } from "@/app/actions";
 import { ALL_CURRENCIES, EXPENSE_CATEGORIES } from "@/lib/currencies";
 import { toCents, fromCents } from "@/lib/money";
-import { splitEvenly } from "@/lib/splitting";
+import { splitEvenly, distributeProportionally } from "@/lib/splitting";
 
 type Person = { id: string; name: string };
-type SplitType = "EVEN" | "EXACT" | "ITEM";
+type SplitType = "EVEN" | "EXACT" | "ITEM" | "SHARES";
 
 type PayerRow = { personId: string; amount: string };
 type ExactRow = { personId: string; included: boolean; amount: string; touched: boolean };
 type ItemRow = { description: string; amount: string; personIds: string[] };
+type ShareRow = { personId: string; included: boolean; shares: number };
 
 export type InitialExpenseValues = {
   description: string;
@@ -24,6 +25,7 @@ export type InitialExpenseValues = {
   payers: PayerRow[];
   evenParticipantIds: string[];
   exactRows: ExactRow[];
+  shareRows: ShareRow[];
   items: ItemRow[];
   isRecurring: boolean;
   recurrenceInterval: "WEEKLY" | "MONTHLY";
@@ -76,6 +78,10 @@ export function AddExpenseForm({
   const [exactRows, setExactRows] = useState<ExactRow[]>(
     initialValues?.exactRows ??
       people.map((p) => ({ personId: p.id, included: true, amount: "", touched: false }))
+  );
+
+  const [shareRows, setShareRows] = useState<ShareRow[]>(
+    initialValues?.shareRows ?? people.map((p) => ({ personId: p.id, included: true, shares: 1 }))
   );
 
   const [items, setItems] = useState<ItemRow[]>(
@@ -156,6 +162,20 @@ export function AddExpenseForm({
     return row.touched ? row.amount : fromCents(exactAutoShares[row.personId] ?? 0);
   }
 
+  const includedShareRows = useMemo(() => shareRows.filter((r) => r.included), [shareRows]);
+
+  const shareAmounts = useMemo(() => {
+    const distributed = distributeProportionally(
+      totalCents,
+      includedShareRows.map((r) => r.shares)
+    );
+    const result: Record<string, number> = {};
+    includedShareRows.forEach((r, i) => {
+      result[r.personId] = distributed[i];
+    });
+    return result;
+  }, [totalCents, includedShareRows]);
+
   function addPayer() {
     setPayers((prev) => [...prev, { personId: people[0]?.id ?? "", amount: "" }]);
   }
@@ -184,6 +204,10 @@ export function AddExpenseForm({
     // while retyping — it must never snap back to the auto-filled value,
     // or clearing it to type a fresh number becomes impossible.
     updateExactRow(personId, { amount: value, touched: true });
+  }
+
+  function updateShareRow(personId: string, patch: Partial<ShareRow>) {
+    setShareRows((prev) => prev.map((r) => (r.personId === personId ? { ...r, ...patch } : r)));
   }
 
   function addItem() {
@@ -224,6 +248,9 @@ export function AddExpenseForm({
       .filter((it) => it.description && it.amount)
       .map((it) => ({ description: it.description, amount: it.amount, personIds: it.personIds }))
   );
+  const sharesJson = JSON.stringify(
+    includedShareRows.map((r) => ({ personId: r.personId, shares: r.shares }))
+  );
 
   return (
     <form
@@ -236,6 +263,7 @@ export function AddExpenseForm({
       <input type="hidden" name="participantsJson" value={participantsJson} />
       <input type="hidden" name="exactJson" value={exactJson} />
       <input type="hidden" name="itemsJson" value={itemsJson} />
+      <input type="hidden" name="sharesJson" value={sharesJson} />
 
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Description</label>
@@ -305,8 +333,8 @@ export function AddExpenseForm({
 
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Split type</span>
-        <div className="flex gap-2">
-          {(["EVEN", "EXACT", "ITEM"] as SplitType[]).map((type) => (
+        <div className="grid grid-cols-2 gap-2">
+          {(["EVEN", "EXACT", "ITEM", "SHARES"] as SplitType[]).map((type) => (
             <button
               key={type}
               type="button"
@@ -317,14 +345,20 @@ export function AddExpenseForm({
                   : "border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
               }`}
             >
-              {type === "EVEN" ? "Even" : type === "EXACT" ? "Exact amounts" : "Item-by-item"}
+              {type === "EVEN"
+                ? "Even"
+                : type === "EXACT"
+                  ? "Exact amounts"
+                  : type === "ITEM"
+                    ? "Item-by-item"
+                    : "Shares"}
             </button>
           ))}
         </div>
       </div>
       <input type="hidden" name="splitType" value={splitType} />
 
-      {(splitType === "EVEN" || splitType === "EXACT") && (
+      {(splitType === "EVEN" || splitType === "EXACT" || splitType === "SHARES") && (
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Total amount</label>
           <input
@@ -424,6 +458,48 @@ export function AddExpenseForm({
                 )} ${currency})`
               : `Remaining to split automatically: ${fromCents(Math.max(exactRemainderCents, 0))} ${currency}`}
           </p>
+        </div>
+      )}
+
+      {splitType === "SHARES" && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Shares per person</span>
+          <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            e.g. give an adult 2 shares and a kid 1 share to split roughly 2:1.
+          </p>
+          <div className="flex flex-col gap-2">
+            {shareRows.map((row) => {
+              const person = people.find((p) => p.id === row.personId);
+              return (
+                <div key={row.personId} className="flex items-center gap-2">
+                  <label className="flex flex-1 items-center gap-2 text-sm text-zinc-800 dark:text-zinc-200">
+                    <input
+                      type="checkbox"
+                      checked={row.included}
+                      onChange={(e) => updateShareRow(row.personId, { included: e.target.checked })}
+                    />
+                    {person?.name}
+                  </label>
+                  <input
+                    type="number"
+                    step="1"
+                    min="1"
+                    disabled={!row.included}
+                    value={row.shares}
+                    onChange={(e) =>
+                      updateShareRow(row.personId, { shares: Math.max(1, Number(e.target.value) || 1) })
+                    }
+                    className="w-16 rounded-lg border border-zinc-300 bg-white px-2 py-1.5 text-center text-sm text-zinc-900 outline-none focus:border-zinc-500 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                  />
+                  {row.included && (
+                    <span className="w-20 text-right text-sm text-zinc-500 dark:text-zinc-400">
+                      {fromCents(shareAmounts[row.personId] ?? 0)} {currency}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
