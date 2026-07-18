@@ -1,4 +1,5 @@
 import { toCents } from "@/lib/money";
+import { distributeProportionally } from "@/lib/splitting";
 
 type ExpenseForAnalytics = {
   date: Date;
@@ -31,20 +32,18 @@ export function totalsByCategory(expenses: ExpenseForAnalytics[]): CategoryTotal
 export function totalsByPerson(expenses: ExpenseForAnalytics[]): PersonTotal[] {
   const totals = new Map<string, { name: string; cents: number }>();
   for (const expense of expenses) {
-    const rate =
-      toCents(expense.convertedAmount.toString()) /
-      Math.max(
-        expense.participants.reduce((sum, p) => sum + toCents(p.owedAmount.toString()), 0),
-        1
-      );
-    for (const participant of expense.participants) {
-      const homeCents = Math.round(toCents(participant.owedAmount.toString()) * rate);
+    const convertedTotalCents = toCents(expense.convertedAmount.toString());
+    const shares = distributeProportionally(
+      convertedTotalCents,
+      expense.participants.map((p) => toCents(p.owedAmount.toString()))
+    );
+    expense.participants.forEach((participant, i) => {
       const existing = totals.get(participant.personId);
       totals.set(participant.personId, {
         name: participant.person.name,
-        cents: (existing?.cents ?? 0) + homeCents,
+        cents: (existing?.cents ?? 0) + shares[i],
       });
-    }
+    });
   }
   return Array.from(totals.entries())
     .map(([personId, { name, cents }]) => ({ personId, name, cents }))

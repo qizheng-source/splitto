@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { toCents } from "@/lib/money";
+import { distributeProportionally } from "@/lib/splitting";
 
 export type Balance = { personId: string; name: string; balanceCents: number };
 export type Settlement = { fromPersonId: string; toPersonId: string; amountCents: number };
@@ -26,17 +27,28 @@ export async function getGroupBalances(groupId: string): Promise<Balance[]> {
   for (const person of group.people) balanceCents[person.id] = 0;
 
   for (const expense of group.expenses) {
-    const rate = Number(expense.exchangeRate);
+    // Convert each person's share of this expense into home-currency cents by
+    // distributing the expense's own (already correctly rounded) converted
+    // total proportionally — never by rounding each share independently,
+    // which can drift the group's overall balance away from zero over time.
+    const convertedTotalCents = toCents(expense.convertedAmount.toString());
 
-    for (const payer of expense.payers) {
-      const homeCents = Math.round(toCents(payer.amountPaid.toString()) * rate);
-      balanceCents[payer.personId] = (balanceCents[payer.personId] ?? 0) + homeCents;
-    }
+    const payerShares = distributeProportionally(
+      convertedTotalCents,
+      expense.payers.map((p) => toCents(p.amountPaid.toString()))
+    );
+    expense.payers.forEach((payer, i) => {
+      balanceCents[payer.personId] = (balanceCents[payer.personId] ?? 0) + payerShares[i];
+    });
 
-    for (const participant of expense.participants) {
-      const homeCents = Math.round(toCents(participant.owedAmount.toString()) * rate);
-      balanceCents[participant.personId] = (balanceCents[participant.personId] ?? 0) - homeCents;
-    }
+    const participantShares = distributeProportionally(
+      convertedTotalCents,
+      expense.participants.map((p) => toCents(p.owedAmount.toString()))
+    );
+    expense.participants.forEach((participant, i) => {
+      balanceCents[participant.personId] =
+        (balanceCents[participant.personId] ?? 0) - participantShares[i];
+    });
   }
 
   for (const settlement of group.settlements) {
