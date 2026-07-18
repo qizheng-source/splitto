@@ -27,6 +27,8 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - DECIDED: Fully account-less for v1. Design kept open so optional accounts (e.g. "see all my groups in one place") could be added later without a data model rewrite.
 - DECIDED: Groups are found again via the bookmarked/saved link — no login, no device-tracking list.
 - DECIDED: People can be added to a group at any time (not just at creation) via an "Add participant" button on the group page — anyone with the link can add a new person's name.
+- DECIDED: Opening the group link leads straight to recent activity (Add/Settle/History buttons + the transaction list), not the participant list or share-link box — those are tucked into a collapsed "Group info & share link" section at the bottom, since they're only needed occasionally, not every visit.
+- DECIDED: The group page's transaction list shows settlements alongside expenses (matching History), so it never looks like recorded payments have vanished.
 
 ## 4. Currency
 - Multi-currency support per group/expense (Tricount-style, useful for travel)

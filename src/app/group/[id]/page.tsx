@@ -40,19 +40,38 @@ export default async function GroupPage({
     },
   });
 
-  const expensesByDate = new Map<string, typeof expenses>();
-  for (const expense of expenses) {
-    const dateKey = expense.date.toLocaleDateString(undefined, {
+  const settlements = await prisma.settlement.findMany({
+    where: { groupId: group.id },
+    orderBy: [{ date: "desc" }, { id: "desc" }],
+    include: { fromPerson: true, toPerson: true },
+  });
+
+  type Transaction =
+    | { type: "expense"; date: Date; expense: (typeof expenses)[number] }
+    | { type: "settlement"; date: Date; settlement: (typeof settlements)[number] };
+
+  const transactions: Transaction[] = [
+    ...expenses.map((expense): Transaction => ({ type: "expense", date: expense.date, expense })),
+    ...settlements.map((settlement): Transaction => ({
+      type: "settlement",
+      date: settlement.date,
+      settlement,
+    })),
+  ].sort((a, b) => b.date.getTime() - a.date.getTime());
+
+  const transactionsByDate = new Map<string, Transaction[]>();
+  for (const tx of transactions) {
+    const dateKey = tx.date.toLocaleDateString(undefined, {
       weekday: "long",
       year: "numeric",
       month: "long",
       day: "numeric",
     });
-    const bucket = expensesByDate.get(dateKey);
+    const bucket = transactionsByDate.get(dateKey);
     if (bucket) {
-      bucket.push(expense);
+      bucket.push(tx);
     } else {
-      expensesByDate.set(dateKey, [expense]);
+      transactionsByDate.set(dateKey, [tx]);
     }
   }
 
@@ -62,47 +81,13 @@ export default async function GroupPage({
   const shareUrl = `${protocol}://${host}/group/${group.id}`;
 
   return (
-    <div className="flex flex-1 flex-col items-center bg-zinc-50 px-6 py-20 dark:bg-black">
-      <div className="flex w-full max-w-md flex-col gap-8">
+    <div className="flex flex-1 flex-col items-center bg-zinc-50 px-6 py-8 dark:bg-black sm:py-16">
+      <div className="flex w-full max-w-md flex-col gap-6">
         <div className="flex flex-col gap-1 text-center">
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">{group.name}</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">
             Home currency: {group.homeCurrency}
           </p>
-        </div>
-
-        <ShareLinkBox url={shareUrl} />
-
-        <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Participants
-          </span>
-          <ul className="flex flex-col gap-2">
-            {group.people.map((person) => (
-              <li
-                key={person.id}
-                className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
-              >
-                {person.name}
-              </li>
-            ))}
-          </ul>
-          <form action={addParticipant} className="flex gap-2">
-            <input type="hidden" name="groupId" value={group.id} />
-            <input
-              type="text"
-              name="name"
-              required
-              placeholder="Add a person"
-              className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-            />
-            <button
-              type="submit"
-              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-            >
-              Add
-            </button>
-          </form>
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row">
@@ -127,58 +112,115 @@ export default async function GroupPage({
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Expenses
-          </span>
-          {expenses.length === 0 ? (
-            <p className="text-sm text-zinc-400 dark:text-zinc-600">No expenses logged yet.</p>
+          {transactions.length === 0 ? (
+            <p className="text-sm text-zinc-400 dark:text-zinc-600">No activity yet — add your first expense.</p>
           ) : (
             <div className="flex flex-col gap-4">
-              {Array.from(expensesByDate.entries()).map(([dateLabel, dayExpenses]) => (
+              {Array.from(transactionsByDate.entries()).map(([dateLabel, dayTransactions]) => (
                 <div key={dateLabel} className="flex flex-col gap-2">
                   <span className="text-xs font-medium text-zinc-400 dark:text-zinc-600">{dateLabel}</span>
                   <ul className="flex flex-col gap-2">
-                    {dayExpenses.map((expense) => (
-                      <li key={expense.id}>
-                        <Link
-                          href={`/group/${group.id}/expenses/${expense.id}`}
-                          className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                              {expense.description}
-                            </span>
-                            <span className="text-zinc-700 dark:text-zinc-300">
-                              {formatMoney(expense.amount.toString())} {expense.currency}
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                            <span>
-                              {expense.createdAt.toLocaleTimeString(undefined, {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}{" "}
-                              · {expense.category}
-                              {expense.isRecurring
-                                ? ` · repeats ${expense.recurrenceInterval?.toLowerCase()}`
-                                : ""}
-                              {expense.currency !== group.homeCurrency
-                                ? ` · ${formatMoney(expense.convertedAmount.toString())} ${group.homeCurrency}`
-                                : ""}
-                            </span>
-                            <span>
-                              Paid by {expense.payers.map((p) => p.person.name).join(", ")}
-                            </span>
-                          </div>
-                        </Link>
-                      </li>
-                    ))}
+                    {dayTransactions.map((tx) =>
+                      tx.type === "expense" ? (
+                        <li key={`expense-${tx.expense.id}`}>
+                          <Link
+                            href={`/group/${group.id}/expenses/${tx.expense.id}`}
+                            className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                                {tx.expense.description}
+                              </span>
+                              <span className="text-zinc-700 dark:text-zinc-300">
+                                {formatMoney(tx.expense.amount.toString())} {tx.expense.currency}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+                              <span>
+                                {tx.expense.createdAt.toLocaleTimeString(undefined, {
+                                  hour: "numeric",
+                                  minute: "2-digit",
+                                })}{" "}
+                                · {tx.expense.category}
+                                {tx.expense.isRecurring
+                                  ? ` · repeats ${tx.expense.recurrenceInterval?.toLowerCase()}`
+                                  : ""}
+                                {tx.expense.currency !== group.homeCurrency
+                                  ? ` · ${formatMoney(tx.expense.convertedAmount.toString())} ${group.homeCurrency}`
+                                  : ""}
+                              </span>
+                              <span>
+                                Paid by {tx.expense.payers.map((p) => p.person.name).join(", ")}
+                              </span>
+                            </div>
+                          </Link>
+                        </li>
+                      ) : (
+                        <li key={`settlement-${tx.settlement.id}`}>
+                          <Link
+                            href={`/group/${group.id}/settlements/${tx.settlement.id}`}
+                            className="flex flex-col gap-1 rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-3 text-sm hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                                {tx.settlement.fromPerson.name} → {tx.settlement.toPerson.name}
+                              </span>
+                              <span className="text-zinc-700 dark:text-zinc-300">
+                                {formatMoney(tx.settlement.amount.toString())} {tx.settlement.currency}
+                              </span>
+                            </div>
+                            <div className="text-xs text-zinc-500 dark:text-zinc-400">Settlement</div>
+                          </Link>
+                        </li>
+                      )
+                    )}
                   </ul>
                 </div>
               ))}
             </div>
           )}
         </div>
+
+        <details className="group flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <summary className="cursor-pointer text-sm font-medium text-zinc-700 dark:text-zinc-300">
+            Group info &amp; share link
+          </summary>
+          <div className="mt-3 flex flex-col gap-4">
+            <ShareLinkBox url={shareUrl} />
+
+            <div className="flex flex-col gap-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                Participants
+              </span>
+              <ul className="flex flex-col gap-2">
+                {group.people.map((person) => (
+                  <li
+                    key={person.id}
+                    className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
+                  >
+                    {person.name}
+                  </li>
+                ))}
+              </ul>
+              <form action={addParticipant} className="flex gap-2">
+                <input type="hidden" name="groupId" value={group.id} />
+                <input
+                  type="text"
+                  name="name"
+                  required
+                  placeholder="Add a person"
+                  className="flex-1 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                />
+                <button
+                  type="submit"
+                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                >
+                  Add
+                </button>
+              </form>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
   );
