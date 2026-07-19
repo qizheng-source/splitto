@@ -145,8 +145,8 @@ export default async function GroupPage({
                                 {tx.expense.createdAt.toLocaleTimeString(undefined, {
                                   hour: "numeric",
                                   minute: "2-digit",
-                                })}{" "}
-                                · {tx.expense.category}
+                                })}
+                                {tx.expense.category ? ` · ${tx.expense.category}` : ""}
                                 {tx.expense.isRecurring
                                   ? ` · repeats ${tx.expense.recurrenceInterval?.toLowerCase()}`
                                   : ""}

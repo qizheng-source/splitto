@@ -221,7 +221,8 @@ export default async function HistoryPage({
                       </div>
                       <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                         <span>
-                          {tx.expense.date.toLocaleDateString()} · {tx.expense.category}
+                          {tx.expense.date.toLocaleDateString()}
+                          {tx.expense.category ? ` · ${tx.expense.category}` : ""}
                         </span>
                         <span>
                           Paid by {tx.expense.payers.map((p) => p.person.name).join(", ")}

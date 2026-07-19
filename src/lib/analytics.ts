@@ -3,7 +3,7 @@ import { distributeProportionally } from "@/lib/splitting";
 
 type ExpenseForAnalytics = {
   date: Date;
-  category: string;
+  category: string | null;
   convertedAmount: { toString(): string };
   participants: { personId: string; owedAmount: { toString(): string }; person: { name: string } }[];
 };
@@ -12,12 +12,15 @@ export type CategoryTotal = { category: string; cents: number };
 export type PersonTotal = { personId: string; name: string; cents: number };
 export type DayTotal = { dateKey: string; label: string; cents: number };
 
+const UNCATEGORIZED = "Uncategorized";
+
 /** Total spend per category, in home-currency cents, sorted descending. */
 export function totalsByCategory(expenses: ExpenseForAnalytics[]): CategoryTotal[] {
   const totals = new Map<string, number>();
   for (const expense of expenses) {
+    const category = expense.category ?? UNCATEGORIZED;
     const cents = toCents(expense.convertedAmount.toString());
-    totals.set(expense.category, (totals.get(expense.category) ?? 0) + cents);
+    totals.set(category, (totals.get(category) ?? 0) + cents);
   }
   return Array.from(totals.entries())
     .map(([category, cents]) => ({ category, cents }))

@@ -27,13 +27,14 @@ export default async function EditExpensePage({
   });
   if (!expense || expense.groupId !== group.id) notFound();
 
-  const isPresetCategory = (EXPENSE_CATEGORIES as readonly string[]).includes(expense.category);
+  const isPresetCategory =
+    expense.category !== null && (EXPENSE_CATEGORIES as readonly string[]).includes(expense.category);
 
   const initialValues: InitialExpenseValues = {
     description: expense.description,
     date: expense.date.toISOString().slice(0, 10),
-    category: isPresetCategory ? expense.category : "Other",
-    customCategory: isPresetCategory ? "" : expense.category,
+    category: isPresetCategory ? expense.category! : expense.category ? "Other" : "",
+    customCategory: isPresetCategory ? "" : (expense.category ?? ""),
     currency: expense.currency,
     splitType: expense.splitType,
     amount: formatMoney(expense.amount.toString()),

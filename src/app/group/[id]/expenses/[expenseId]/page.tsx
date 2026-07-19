@@ -40,9 +40,11 @@ export default async function ExpenseDetailPage({
         </div>
 
         <div className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
-          <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
-            {expense.category}
-          </span>
+          {expense.category && (
+            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+              {expense.category}
+            </span>
+          )}
           <span className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
             {expense.description}
           </span>

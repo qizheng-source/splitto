@@ -10,6 +10,7 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - DECIDED: Support photo/receipt attachments on an expense.
 - DECIDED: Support recurring expenses (e.g. monthly rent, subscriptions) that repeat automatically.
 - DECIDED: The "who paid" field remembers the last person selected on that specific device (via local browser storage, not the shared database) and defaults to them next time — since there are no accounts, each person's own phone naturally defaults to themself.
+- DECIDED: Category is optional and defaults to blank ("No category"), not a preset like "Food & Drink" — a pre-filled default risked people not noticing it and silently mis-categorizing unrelated expenses.
 
 ## 2. Splitting Logic
 - Even split across selected participants

@@ -53,7 +53,7 @@ model Expense {
   group              Group               @relation(fields: [groupId], references: [id])
   description        String
   date               DateTime
-  category           String
+  category           String?
   currency           String
   amount             Decimal
   convertedAmount    Decimal

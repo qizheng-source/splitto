@@ -62,7 +62,7 @@ export function AddExpenseForm({
 
   const [description, setDescription] = useState(initialValues?.description ?? "");
   const [date, setDate] = useState(initialValues?.date ?? todayISO());
-  const [category, setCategory] = useState<string>(initialValues?.category ?? EXPENSE_CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(initialValues?.category ?? "");
   const [customCategory, setCustomCategory] = useState(initialValues?.customCategory ?? "");
   const [currency, setCurrency] = useState(initialValues?.currency ?? defaultCurrency ?? homeCurrency);
   const [splitType, setSplitType] = useState<SplitType>(initialValues?.splitType ?? "EVEN");
@@ -308,13 +308,16 @@ export function AddExpenseForm({
       </div>
 
       <div className="flex flex-col gap-2">
-        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Category</label>
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Category <span className="font-normal text-zinc-400 dark:text-zinc-500">(optional)</span>
+        </label>
         <select
           name="category"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
         >
+          <option value="">No category</option>
           {EXPENSE_CATEGORIES.map((c) => (
             <option key={c} value={c}>
               {c}

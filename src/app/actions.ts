@@ -123,9 +123,10 @@ async function parseExpenseForm(formData: FormData) {
   const splitType = String(formData.get("splitType") ?? "") as SplitType;
   const categorySelect = String(formData.get("category") ?? "");
   const customCategory = String(formData.get("customCategory") ?? "").trim();
-  const category = categorySelect === "Other" && customCategory ? customCategory : categorySelect;
+  const category =
+    categorySelect === "Other" && customCategory ? customCategory : categorySelect || null;
 
-  if (!groupId || !description || !dateInput || !currency || !category) {
+  if (!groupId || !description || !dateInput || !currency) {
     throw new Error("Missing required expense fields.");
   }
 
