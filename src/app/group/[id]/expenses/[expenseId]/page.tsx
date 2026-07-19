@@ -70,6 +70,15 @@ export default async function ExpenseDetailPage({
               year: "numeric",
             })}
           </span>
+          <span className="text-xs text-zinc-400 dark:text-zinc-600">
+            Logged{" "}
+            {expense.createdAt.toLocaleString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </span>
           {expense.receiptUrl && (
             <a
               href={expense.receiptUrl}

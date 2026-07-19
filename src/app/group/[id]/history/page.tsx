@@ -222,6 +222,11 @@ export default async function HistoryPage({
                       <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                         <span>
                           {tx.expense.date.toLocaleDateString()}
+                          {" · logged "}
+                          {tx.expense.createdAt.toLocaleTimeString(undefined, {
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
                           {tx.expense.category ? ` · ${tx.expense.category}` : ""}
                         </span>
                         <span>
