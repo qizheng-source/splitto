@@ -49,6 +49,15 @@ export default async function SettlementDetailPage({
               year: "numeric",
             })}
           </span>
+          <span className="text-xs text-zinc-400 dark:text-zinc-600">
+            Logged{" "}
+            {settlement.createdAt.toLocaleString(undefined, {
+              month: "short",
+              day: "numeric",
+              hour: "numeric",
+              minute: "2-digit",
+            })}
+          </span>
         </div>
 
         <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">

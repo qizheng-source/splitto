@@ -174,7 +174,13 @@ export default async function GroupPage({
                                 {formatMoney(tx.settlement.amount.toString())} {tx.settlement.currency}
                               </span>
                             </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400">Settlement</div>
+                            <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                              {tx.settlement.createdAt.toLocaleTimeString(undefined, {
+                                hour: "numeric",
+                                minute: "2-digit",
+                              })}{" "}
+                              · Settlement
+                            </div>
                           </Link>
                         </li>
                       )
