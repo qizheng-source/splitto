@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getGroupBalances, simplifyDebts } from "@/lib/balances";
 import { formatMoney, fromCents } from "@/lib/money";
 import { recordSettlement } from "@/app/actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function SettleUpPage({
   params,
@@ -85,12 +86,12 @@ export default async function SettleUpPage({
                     <input type="hidden" name="toPersonId" value={s.toPersonId} />
                     <input type="hidden" name="amount" value={fromCents(s.amountCents)} />
                     <input type="hidden" name="currency" value={group.homeCurrency} />
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                    <SubmitButton
+                      pendingText="Saving…"
+                      className="rounded-lg border border-zinc-300 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-zinc-100 disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
                     >
                       Mark as paid
-                    </button>
+                    </SubmitButton>
                   </form>
                 </li>
               ))}

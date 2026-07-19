@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { deleteSettlement } from "@/app/actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function SettlementActionsMenu({
   groupId,
@@ -53,12 +54,12 @@ export function SettlementActionsMenu({
           >
             <input type="hidden" name="groupId" value={groupId} />
             <input type="hidden" name="settlementId" value={settlementId} />
-            <button
-              type="submit"
-              className="w-full px-3 py-1.5 text-left text-sm text-red-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            <SubmitButton
+              pendingText="Deleting…"
+              className="w-full px-3 py-1.5 text-left text-sm text-red-600 hover:bg-zinc-100 disabled:opacity-60 dark:hover:bg-zinc-800"
             >
               Delete
-            </button>
+            </SubmitButton>
           </form>
         </div>
       )}

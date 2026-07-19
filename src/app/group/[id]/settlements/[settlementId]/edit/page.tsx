@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { updateSettlement } from "@/app/actions";
 import { formatMoney } from "@/lib/money";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function EditSettlementPage({
   params,
@@ -92,12 +93,9 @@ export default async function EditSettlementPage({
             />
           </div>
 
-          <button
-            type="submit"
-            className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-          >
+          <SubmitButton className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300">
             Save changes
-          </button>
+          </SubmitButton>
         </form>
       </div>
     </div>

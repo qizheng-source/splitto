@@ -5,6 +5,7 @@ import { createExpense, updateExpense } from "@/app/actions";
 import { ALL_CURRENCIES, EXPENSE_CATEGORIES } from "@/lib/currencies";
 import { toCents, fromCents } from "@/lib/money";
 import { splitEvenly, distributeProportionally } from "@/lib/splitting";
+import { SubmitButton } from "@/components/SubmitButton";
 
 type Person = { id: string; name: string };
 type SplitType = "EVEN" | "EXACT" | "ITEM" | "SHARES";
@@ -694,13 +695,13 @@ export function AddExpenseForm({
         )}
       </div>
 
-      <button
-        type="submit"
+      <SubmitButton
         disabled={!payersMatch}
+        pendingText={isEditing ? "Saving…" : "Adding…"}
         className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
       >
         {isEditing ? "Save changes" : "Add expense"}
-      </button>
+      </SubmitButton>
     </form>
   );
 }

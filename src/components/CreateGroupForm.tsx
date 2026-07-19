@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { createGroup } from "@/app/actions";
 import { PINNED_CURRENCIES, OTHER_CURRENCIES } from "@/lib/currencies";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export function CreateGroupForm() {
   const [participants, setParticipants] = useState(["", ""]);
@@ -99,12 +100,12 @@ export function CreateGroupForm() {
         </button>
       </div>
 
-      <button
-        type="submit"
-        className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+      <SubmitButton
+        pendingText="Creating…"
+        className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
       >
         Create group
-      </button>
+      </SubmitButton>
     </form>
   );
 }

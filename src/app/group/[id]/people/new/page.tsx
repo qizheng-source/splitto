@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { addParticipant } from "@/app/actions";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default async function AddPeoplePage({
   params,
@@ -38,12 +39,12 @@ export default async function AddPeoplePage({
             placeholder="Add a person"
             className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
           />
-          <button
-            type="submit"
-            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          <SubmitButton
+            pendingText="Adding…"
+            className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
             Add
-          </button>
+          </SubmitButton>
         </form>
 
         <div className="flex flex-col gap-2">
