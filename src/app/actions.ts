@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { toCents, fromCents } from "@/lib/money";
 import { splitEvenly, splitItemsAmongAssignees, distributeProportionally } from "@/lib/splitting";
 import { computeNextOccurrence } from "@/lib/recurring";
-import { getExchangeRate } from "@/lib/exchangeRate";
+import { getExchangeRateWithFallback } from "@/lib/exchangeRate";
 import { put } from "@vercel/blob";
 import type { SplitType, RecurrenceInterval } from "@/generated/prisma/client";
 
@@ -102,12 +102,34 @@ export async function deleteSettlement(formData: FormData) {
     throw new Error("Missing settlement id.");
   }
 
-  await prisma.settlement.delete({ where: { id: settlementId } });
+  await prisma.settlement.update({
+    where: { id: settlementId },
+    data: { deletedAt: new Date() },
+  });
 
   revalidatePath(`/group/${groupId}`);
   revalidatePath(`/group/${groupId}/settle`);
   revalidatePath(`/group/${groupId}/history`);
-  redirect(`/group/${groupId}/history`);
+  redirect(`/group/${groupId}/history?deletedSettlement=${settlementId}`);
+}
+
+export async function restoreSettlement(formData: FormData) {
+  const settlementId = String(formData.get("settlementId") ?? "");
+  const groupId = String(formData.get("groupId") ?? "");
+
+  if (!settlementId || !groupId) {
+    throw new Error("Missing settlement id.");
+  }
+
+  await prisma.settlement.update({
+    where: { id: settlementId },
+    data: { deletedAt: null },
+  });
+
+  revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/settle`);
+  revalidatePath(`/group/${groupId}/history`);
+  revalidatePath(`/group/${groupId}/deleted`);
 }
 
 type PayerInput = { personId: string; amount: string };
@@ -197,11 +219,17 @@ async function parseExpenseForm(formData: FormData) {
   const recurrenceInterval = isRecurring
     ? (String(formData.get("recurrenceInterval") ?? "") as RecurrenceInterval)
     : null;
+  const recurrenceEndDateInput = String(formData.get("recurrenceEndDate") ?? "");
+  const recurrenceEndDate = isRecurring && recurrenceEndDateInput ? new Date(recurrenceEndDateInput) : null;
   const date = new Date(dateInput);
   const nextOccurrenceDate =
     isRecurring && recurrenceInterval ? computeNextOccurrence(date, recurrenceInterval) : null;
 
-  const exchangeRate = await getExchangeRate(currency, group.homeCurrency);
+  const { rate: exchangeRate, isFallback: exchangeRateIsFallback } = await getExchangeRateWithFallback(
+    currency,
+    group.homeCurrency,
+    groupId
+  );
   const convertedCents = Math.round(totalCents * exchangeRate);
 
   const receiptFile = formData.get("receipt");
@@ -225,10 +253,12 @@ async function parseExpenseForm(formData: FormData) {
     splitType,
     isRecurring,
     recurrenceInterval,
+    recurrenceEndDate,
     nextOccurrenceDate,
     amount: fromCents(totalCents),
     convertedAmount: fromCents(convertedCents),
     exchangeRate: exchangeRate.toString(),
+    exchangeRateIsFallback,
     payersData: payers.map((p) => ({
       personId: p.personId,
       amountPaid: fromCents(toCents(p.amount)),
@@ -258,10 +288,12 @@ export async function createExpense(formData: FormData) {
       amount: parsed.amount,
       convertedAmount: parsed.convertedAmount,
       exchangeRate: parsed.exchangeRate,
+      exchangeRateIsFallback: parsed.exchangeRateIsFallback,
       receiptUrl: parsed.receiptUrl,
       splitType: parsed.splitType,
       isRecurring: parsed.isRecurring,
       recurrenceInterval: parsed.recurrenceInterval,
+      recurrenceEndDate: parsed.recurrenceEndDate,
       nextOccurrenceDate: parsed.nextOccurrenceDate,
       payers: { create: parsed.payersData },
       participants: { create: parsed.participantsData },
@@ -299,10 +331,12 @@ export async function updateExpense(formData: FormData) {
       amount: parsed.amount,
       convertedAmount: parsed.convertedAmount,
       exchangeRate: parsed.exchangeRate,
+      exchangeRateIsFallback: parsed.exchangeRateIsFallback,
       receiptUrl: parsed.receiptUrl,
       splitType: parsed.splitType,
       isRecurring: parsed.isRecurring,
       recurrenceInterval: parsed.recurrenceInterval,
+      recurrenceEndDate: parsed.recurrenceEndDate,
       nextOccurrenceDate: parsed.nextOccurrenceDate,
       payers: { deleteMany: {}, create: parsed.payersData },
       participants: { deleteMany: {}, create: parsed.participantsData },
@@ -331,8 +365,30 @@ export async function deleteExpense(formData: FormData) {
     throw new Error("Missing expense id.");
   }
 
-  await prisma.expense.delete({ where: { id: expenseId } });
+  await prisma.expense.update({
+    where: { id: expenseId },
+    data: { deletedAt: new Date() },
+  });
 
   revalidatePath(`/group/${groupId}`);
-  redirect(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/history`);
+  redirect(`/group/${groupId}?deletedExpense=${expenseId}`);
+}
+
+export async function restoreExpense(formData: FormData) {
+  const expenseId = String(formData.get("expenseId") ?? "");
+  const groupId = String(formData.get("groupId") ?? "");
+
+  if (!expenseId || !groupId) {
+    throw new Error("Missing expense id.");
+  }
+
+  await prisma.expense.update({
+    where: { id: expenseId },
+    data: { deletedAt: null },
+  });
+
+  revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/history`);
+  revalidatePath(`/group/${groupId}/deleted`);
 }

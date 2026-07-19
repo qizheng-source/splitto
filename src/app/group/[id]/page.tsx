@@ -4,13 +4,17 @@ import { prisma } from "@/lib/prisma";
 import { ShareLinkBox } from "@/components/ShareLinkBox";
 import { generateDueRecurringExpenses } from "@/lib/recurring";
 import { formatMoney } from "@/lib/money";
+import { UndoToast } from "@/components/UndoToast";
 
 export default async function GroupPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ deletedExpense?: string }>;
 }) {
   const { id } = await params;
+  const { deletedExpense } = await searchParams;
 
   const group = await prisma.group.findUnique({
     where: { id },
@@ -30,8 +34,15 @@ export default async function GroupPage({
 
   await generateDueRecurringExpenses(group.id);
 
+  const deletedExpenseRecord = deletedExpense
+    ? await prisma.expense.findUnique({
+        where: { id: deletedExpense },
+        select: { description: true },
+      })
+    : null;
+
   const expenses = await prisma.expense.findMany({
-    where: { groupId: group.id },
+    where: { groupId: group.id, deletedAt: null },
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
     include: {
       payers: { include: { person: true } },
@@ -40,7 +51,7 @@ export default async function GroupPage({
   });
 
   const settlements = await prisma.settlement.findMany({
-    where: { groupId: group.id },
+    where: { groupId: group.id, deletedAt: null },
     orderBy: [{ date: "desc" }, { id: "desc" }],
     include: { fromPerson: true, toPerson: true },
   });
@@ -217,6 +228,14 @@ export default async function GroupPage({
           </div>
         </details>
       </div>
+      {deletedExpense && deletedExpenseRecord && (
+        <UndoToast
+          groupId={group.id}
+          type="expense"
+          id={deletedExpense}
+          label={`"${deletedExpenseRecord.description}"`}
+        />
+      )}
     </div>
   );
 }

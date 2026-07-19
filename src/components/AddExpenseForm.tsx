@@ -30,6 +30,7 @@ export type InitialExpenseValues = {
   items: ItemRow[];
   isRecurring: boolean;
   recurrenceInterval: "WEEKLY" | "MONTHLY";
+  recurrenceEndDate: string;
   receiptUrl: string | null;
 };
 
@@ -93,6 +94,7 @@ export function AddExpenseForm({
   const [recurrenceInterval, setRecurrenceInterval] = useState<"WEEKLY" | "MONTHLY">(
     initialValues?.recurrenceInterval ?? "MONTHLY"
   );
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState(initialValues?.recurrenceEndDate ?? "");
 
   // Apply this device's remembered payer once, after mount. localStorage only
   // exists in the browser, so this can't be computed during the initial render
@@ -686,15 +688,30 @@ export function AddExpenseForm({
           This expense repeats automatically
         </label>
         {isRecurring && (
-          <select
-            name="recurrenceInterval"
-            value={recurrenceInterval}
-            onChange={(e) => setRecurrenceInterval(e.target.value as "WEEKLY" | "MONTHLY")}
-            className="w-40 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
-          >
-            <option value="WEEKLY">Weekly</option>
-            <option value="MONTHLY">Monthly</option>
-          </select>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500 dark:text-zinc-400">Repeats</label>
+              <select
+                name="recurrenceInterval"
+                value={recurrenceInterval}
+                onChange={(e) => setRecurrenceInterval(e.target.value as "WEEKLY" | "MONTHLY")}
+                className="w-40 rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              >
+                <option value="WEEKLY">Weekly</option>
+                <option value="MONTHLY">Monthly</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-zinc-500 dark:text-zinc-400">Until (optional)</label>
+              <input
+                type="date"
+                name="recurrenceEndDate"
+                value={recurrenceEndDate}
+                onChange={(e) => setRecurrenceEndDate(e.target.value)}
+                className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+              />
+            </div>
+          </div>
         )}
       </div>
 

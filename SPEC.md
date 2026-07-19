@@ -11,6 +11,9 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - DECIDED: Support recurring expenses (e.g. monthly rent, subscriptions) that repeat automatically.
 - DECIDED: The "who paid" field remembers the last person selected on that specific device (via local browser storage, not the shared database) and defaults to them next time — since there are no accounts, each person's own phone naturally defaults to themself.
 - DECIDED: Category is optional and defaults to blank ("No category"), not a preset like "Food & Drink" — a pre-filled default risked people not noticing it and silently mis-categorizing unrelated expenses.
+- DECIDED: If the live exchange-rate API fails (outage, quota), expense entry no longer blocks — falls back to the most recent rate the group actually used for that currency, or 1:1 as a last resort, flagged on the expense as an estimate so it can be fixed later.
+- DECIDED: Recurring expenses support an optional "repeat until" end date, so a recurring charge can naturally stop instead of continuing forever.
+- DECIDED: Deleting an expense or settlement is a soft delete — recoverable indefinitely (no auto-purge) via a "Deleted items" page, plus a brief "Undo" toast right after deleting. Full edit-history tracking (not just deletions) was explicitly ruled out as bigger than needed.
 
 ## 2. Splitting Logic
 - Even split across selected participants
@@ -50,6 +53,8 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - Detailed, searchable expense history (filter/search past expenses)
 - DECIDED: Include spending by category, by person, and over time (trend chart).
 - DECIDED: Category is a fixed preset list (e.g. Food & Drink, Rent, Transport, Utilities, Entertainment, Travel, Shopping, Other) with the option to add a custom category.
+- DECIDED: History includes free-text search on expense description, in addition to the person/category/date filters.
+- DECIDED: A "Deleted items" section (linked from History) lists every deleted expense/settlement, restorable at any time.
 
 ## 7. UI
 - Clean, simple interface (Tricount-style)

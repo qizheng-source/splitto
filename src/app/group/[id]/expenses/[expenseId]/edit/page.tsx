@@ -25,7 +25,7 @@ export default async function EditExpensePage({
       items: { include: { assignments: true } },
     },
   });
-  if (!expense || expense.groupId !== group.id) notFound();
+  if (!expense || expense.groupId !== group.id || expense.deletedAt) notFound();
 
   const isPresetCategory =
     expense.category !== null && (EXPENSE_CATEGORIES as readonly string[]).includes(expense.category);
@@ -67,6 +67,7 @@ export default async function EditExpensePage({
     })),
     isRecurring: expense.isRecurring,
     recurrenceInterval: expense.recurrenceInterval ?? "MONTHLY",
+    recurrenceEndDate: expense.recurrenceEndDate ? expense.recurrenceEndDate.toISOString().slice(0, 10) : "",
     receiptUrl: expense.receiptUrl,
   };
 

@@ -7,16 +7,25 @@ import { EXPENSE_CATEGORIES } from "@/lib/currencies";
 import { BarChart } from "@/components/charts/BarChart";
 import { TrendChart } from "@/components/charts/TrendChart";
 import type { Prisma } from "@/generated/prisma/client";
+import { UndoToast } from "@/components/UndoToast";
 
 export default async function HistoryPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ personId?: string; category?: string; from?: string; to?: string }>;
+  searchParams: Promise<{
+    personId?: string;
+    category?: string;
+    from?: string;
+    to?: string;
+    search?: string;
+    deletedSettlement?: string;
+  }>;
 }) {
   const { id } = await params;
   const filters = await searchParams;
+  const { deletedSettlement } = filters;
 
   const group = await prisma.group.findUnique({
     where: { id },
@@ -24,8 +33,16 @@ export default async function HistoryPage({
   });
   if (!group) notFound();
 
-  const where: Prisma.ExpenseWhereInput = { groupId: group.id };
+  const deletedSettlementRecord = deletedSettlement
+    ? await prisma.settlement.findUnique({
+        where: { id: deletedSettlement },
+        include: { fromPerson: true, toPerson: true },
+      })
+    : null;
+
+  const where: Prisma.ExpenseWhereInput = { groupId: group.id, deletedAt: null };
   if (filters.category) where.category = filters.category;
+  if (filters.search) where.description = { contains: filters.search, mode: "insensitive" };
   if (filters.from || filters.to) {
     where.date = {
       ...(filters.from ? { gte: new Date(filters.from) } : {}),
@@ -48,9 +65,10 @@ export default async function HistoryPage({
     },
   });
 
-  // Settlements aren't spending (no category), so they're excluded from the
-  // list only when a category filter is active, and never affect the charts.
-  const settlementsWhere: Prisma.SettlementWhereInput = { groupId: group.id };
+  // Settlements aren't spending (no category or description), so they're
+  // excluded from the list when a category or text search filter is active,
+  // and never affect the charts.
+  const settlementsWhere: Prisma.SettlementWhereInput = { groupId: group.id, deletedAt: null };
   if (filters.from || filters.to) {
     settlementsWhere.date = {
       ...(filters.from ? { gte: new Date(filters.from) } : {}),
@@ -60,7 +78,7 @@ export default async function HistoryPage({
   if (filters.personId) {
     settlementsWhere.OR = [{ fromPersonId: filters.personId }, { toPersonId: filters.personId }];
   }
-  const settlements = filters.category
+  const settlements = filters.category || filters.search
     ? []
     : await prisma.settlement.findMany({
         where: settlementsWhere,
@@ -86,19 +104,39 @@ export default async function HistoryPage({
     })),
   ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  const hasFilters = Boolean(filters.personId || filters.category || filters.from || filters.to);
+  const hasFilters = Boolean(
+    filters.personId || filters.category || filters.from || filters.to || filters.search
+  );
 
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50 px-6 py-16 dark:bg-black">
       <div className="flex w-full max-w-md flex-col gap-8">
         <div className="flex flex-col gap-1">
-          <Link href={`/group/${group.id}`} className="text-sm text-zinc-500 dark:text-zinc-400">
-            ← Back to {group.name}
-          </Link>
+          <div className="flex items-center justify-between">
+            <Link href={`/group/${group.id}`} className="text-sm text-zinc-500 dark:text-zinc-400">
+              ← Back to {group.name}
+            </Link>
+            <Link
+              href={`/group/${group.id}/deleted`}
+              className="text-sm text-zinc-500 underline underline-offset-2 dark:text-zinc-400"
+            >
+              Deleted items
+            </Link>
+          </div>
           <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-50">History &amp; analytics</h1>
         </div>
 
         <form className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Search</label>
+            <input
+              type="text"
+              name="search"
+              defaultValue={filters.search ?? ""}
+              placeholder="Search description…"
+              className="rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+            />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-zinc-500 dark:text-zinc-400">Person</label>
@@ -265,6 +303,14 @@ export default async function HistoryPage({
           )}
         </div>
       </div>
+      {deletedSettlement && deletedSettlementRecord && (
+        <UndoToast
+          groupId={group.id}
+          type="settlement"
+          id={deletedSettlement}
+          label={`Settlement (${deletedSettlementRecord.fromPerson.name} → ${deletedSettlementRecord.toPerson.name})`}
+        />
+      )}
     </div>
   );
 }

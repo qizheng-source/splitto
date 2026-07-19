@@ -16,8 +16,8 @@ export async function getGroupBalances(groupId: string): Promise<Balance[]> {
     where: { id: groupId },
     include: {
       people: { orderBy: { createdAt: "asc" } },
-      expenses: { include: { payers: true, participants: true } },
-      settlements: true,
+      expenses: { where: { deletedAt: null }, include: { payers: true, participants: true } },
+      settlements: { where: { deletedAt: null } },
     },
   });
 

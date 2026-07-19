@@ -22,7 +22,7 @@ export default async function ExpenseDetailPage({
       items: { include: { assignments: { include: { person: true } } } },
     },
   });
-  if (!expense || expense.groupId !== group.id) notFound();
+  if (!expense || expense.groupId !== group.id || expense.deletedAt) notFound();
 
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50 px-4 py-6 dark:bg-black sm:px-6 sm:py-16">
@@ -55,11 +55,19 @@ export default async function ExpenseDetailPage({
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
               ≈ {formatMoney(expense.convertedAmount.toString())} {group.homeCurrency} · 1{" "}
               {expense.currency} = {group.homeCurrency} {Number(expense.exchangeRate).toFixed(4)}
+              {expense.exchangeRateIsFallback && (
+                <span className="ml-1 text-amber-600 dark:text-amber-500">
+                  (estimated — live rate was unavailable)
+                </span>
+              )}
             </span>
           )}
           {expense.isRecurring && (
             <span className="text-xs text-zinc-500 dark:text-zinc-400">
               Repeats {expense.recurrenceInterval?.toLowerCase()}
+              {expense.recurrenceEndDate
+                ? ` until ${expense.recurrenceEndDate.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
+                : ""}
             </span>
           )}
           <span className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">

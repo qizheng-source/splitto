@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { RecurrenceInterval } from "@/generated/prisma/client";
-import { getExchangeRate } from "@/lib/exchangeRate";
+import { getExchangeRateWithFallback } from "@/lib/exchangeRate";
 import { toCents, fromCents } from "@/lib/money";
 
 export function computeNextOccurrence(date: Date, interval: RecurrenceInterval): Date {
@@ -29,6 +29,7 @@ export async function generateDueRecurringExpenses(groupId: string) {
     where: {
       groupId,
       isRecurring: true,
+      deletedAt: null,
       nextOccurrenceDate: { lte: now },
     },
     include: {
@@ -41,9 +42,14 @@ export async function generateDueRecurringExpenses(groupId: string) {
   for (const template of dueTemplates) {
     let nextDate = template.nextOccurrenceDate!;
     const interval = template.recurrenceInterval!;
+    const endDate = template.recurrenceEndDate;
 
-    while (nextDate <= now) {
-      const exchangeRate = await getExchangeRate(template.currency, group.homeCurrency);
+    while (nextDate <= now && (!endDate || nextDate <= endDate)) {
+      const { rate: exchangeRate, isFallback } = await getExchangeRateWithFallback(
+        template.currency,
+        group.homeCurrency,
+        groupId
+      );
       const convertedAmount = fromCents(Math.round(toCents(template.amount.toString()) * exchangeRate));
 
       await prisma.expense.create({
@@ -56,6 +62,7 @@ export async function generateDueRecurringExpenses(groupId: string) {
           amount: template.amount,
           convertedAmount,
           exchangeRate: exchangeRate.toString(),
+          exchangeRateIsFallback: isFallback,
           splitType: template.splitType,
           isRecurring: false,
           payers: {
@@ -85,9 +92,17 @@ export async function generateDueRecurringExpenses(groupId: string) {
       nextDate = computeNextOccurrence(nextDate, interval);
     }
 
+    // Once the series has run past its end date, turn it off so it stops
+    // being picked up here at all — rather than checking an expired end
+    // date forever on every future visit.
+    const seriesEnded = Boolean(endDate && nextDate > endDate);
+
     await prisma.expense.update({
       where: { id: template.id },
-      data: { nextOccurrenceDate: nextDate },
+      data: {
+        nextOccurrenceDate: nextDate,
+        isRecurring: seriesEnded ? false : true,
+      },
     });
   }
 }

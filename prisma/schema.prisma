@@ -58,12 +58,15 @@ model Expense {
   amount             Decimal
   convertedAmount    Decimal
   exchangeRate       Decimal
+  exchangeRateIsFallback Boolean         @default(false)
   receiptUrl         String?
   splitType          SplitType
   isRecurring        Boolean             @default(false)
   recurrenceInterval RecurrenceInterval?
+  recurrenceEndDate  DateTime?
   nextOccurrenceDate DateTime?
   createdAt          DateTime            @default(now())
+  deletedAt          DateTime?
 
   payers       ExpensePayer[]
   participants ExpenseParticipant[]
@@ -118,4 +121,5 @@ model Settlement {
   currency     String
   date         DateTime @default(now())
   createdAt    DateTime @default(now())
+  deletedAt    DateTime?
 }

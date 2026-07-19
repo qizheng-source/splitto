@@ -18,7 +18,7 @@ export default async function EditSettlementPage({
   if (!group) notFound();
 
   const settlement = await prisma.settlement.findUnique({ where: { id: settlementId } });
-  if (!settlement || settlement.groupId !== group.id) notFound();
+  if (!settlement || settlement.groupId !== group.id || settlement.deletedAt) notFound();
 
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50 px-4 py-6 dark:bg-black sm:px-6 sm:py-16">
