@@ -32,5 +32,9 @@ Tom is a beginner learning to build things with Claude. Building a bill-splittin
 5. Throughout the whole project, keep checking in on preferences before making design decisions (visual style, which currencies matter, whether accounts are required or optional, target platform — web/mobile/both) rather than assuming.
 6. Tom is new to this — explain what's happening in plain language alongside technical steps, not just silent implementation.
 
+## Design Context
+`PRODUCT.md` and `DESIGN.md` at the project root capture Splitto's strategic and visual design system (register, users, positioning, color/typography/component conventions) for the `impeccable` design skill. Read them before any UI/design work; they're the source of truth over ad-hoc styling choices.
+
 ## Status log
 - 2026-07-05: Project kicked off. CLAUDE.md created. Starting SPEC.md draft + first clarifying question.
+- 2026-07-21: Installed the `impeccable` design skill; wrote PRODUCT.md and DESIGN.md capturing the existing design system.

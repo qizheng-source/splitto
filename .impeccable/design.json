@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-21T17:30:00Z",
+  "title": "Design System: Splitto",
+  "extensions": {
+    "colorMeta": {
+      "ink-primary": { "role": "primary", "displayName": "Zinc Ink", "canonical": "#18181b", "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8"] },
+      "positive": { "role": "secondary", "displayName": "Settled Green", "canonical": "#059669", "tonalRamp": ["#022c22", "#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7"] },
+      "negative": { "role": "secondary", "displayName": "Owed Red", "canonical": "#dc2626", "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5"] },
+      "warning": { "role": "tertiary", "displayName": "Estimate Amber", "canonical": "#d97706", "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fcd34d"] },
+      "page-bg": { "role": "neutral", "displayName": "Page Paper", "canonical": "#fafafa", "tonalRamp": ["#000000", "#09090b", "#18181b", "#27272a", "#52525b", "#a1a1aa", "#e4e4e7", "#fafafa"] },
+      "surface": { "role": "neutral", "displayName": "Notebook Surface", "canonical": "#ffffff", "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#71717a", "#a1a1aa", "#e4e4e7", "#ffffff"] },
+      "border": { "role": "neutral", "displayName": "Hairline Border", "canonical": "#e4e4e7", "tonalRamp": ["#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7"] }
+    },
+    "typographyMeta": {
+      "heading": { "displayName": "Heading", "purpose": "Group name at the top of the group page only." },
+      "title": { "displayName": "Title", "purpose": "Page titles across the app." },
+      "body": { "displayName": "Body", "purpose": "Default size for nearly everything: labels, list items, buttons." },
+      "label": { "displayName": "Label", "purpose": "Metadata, timestamps, uppercase section eyebrows." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "spinner", "value": "animate-spin (Tailwind default)", "purpose": "Submit-button pending indicator only; no other motion in the system." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main call-to-action across forms (Add expense, Save changes, Create group).",
+      "html": "<button class=\"ds-btn-primary\">Add expense</button>",
+      "css": ".ds-btn-primary { background: #18181b; color: #ffffff; padding: 12px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; border: none; transition: background 0.15s; } .ds-btn-primary:hover { background: #3f3f46; } .ds-btn-primary:focus-visible { outline: 2px solid #71717a; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outline button for secondary actions (Settle up, History, Cancel).",
+      "html": "<button class=\"ds-btn-secondary\">Settle up</button>",
+      "css": ".ds-btn-secondary { background: #ffffff; color: #3f3f46; padding: 8px 16px; border-radius: 8px; border: 1px solid #d4d4d8; font-size: 0.875rem; font-weight: 500; transition: background 0.15s; } .ds-btn-secondary:hover { background: #f4f4f5; } .ds-btn-secondary:focus-visible { outline: 2px solid #71717a; outline-offset: 2px; }"
+    },
+    {
+      "name": "Expense Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Solid-border card for an expense row in the activity feed.",
+      "html": "<a class=\"ds-card ds-card-solid\" href=\"#\"><div class=\"ds-card-row\"><span class=\"ds-card-title\">Dinner at the night market</span><span class=\"ds-card-amount\">45.00 SGD</span></div><div class=\"ds-card-meta\">9:42 pm · Food &amp; Drink</div></a>",
+      "css": ".ds-card { display: block; border-radius: 8px; padding: 12px 16px; background: #ffffff; text-decoration: none; } .ds-card-solid { border: 1px solid #e4e4e7; } .ds-card-solid:hover { border-color: #d4d4d8; } .ds-card-row { display: flex; justify-content: space-between; align-items: center; } .ds-card-title { font-size: 0.875rem; font-weight: 500; color: #18181b; } .ds-card-amount { font-size: 0.875rem; color: #3f3f46; } .ds-card-meta { font-size: 0.75rem; color: #71717a; margin-top: 4px; }"
+    },
+    {
+      "name": "Settlement Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Dashed-border card — the one reserved visual signal that money moved between people, not an expense.",
+      "html": "<a class=\"ds-card ds-card-dashed\" href=\"#\"><div class=\"ds-card-row\"><span class=\"ds-card-title\">Alice → Bob</span><span class=\"ds-card-amount\">29.90 SGD</span></div><div class=\"ds-card-meta\">Settlement</div></a>",
+      "css": ".ds-card-dashed { border: 1px dashed #d4d4d8; } .ds-card-dashed:hover { border-color: #a1a1aa; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "card",
+      "description": "Standard text/number/date field used across every form.",
+      "html": "<input class=\"ds-input\" placeholder=\"e.g. Dinner at the night market\" />",
+      "css": ".ds-input { border-radius: 8px; border: 1px solid #d4d4d8; background: #ffffff; padding: 8px 16px; font-size: 0.875rem; color: #18181b; outline: none; } .ds-input:focus { border-color: #71717a; } .ds-input::placeholder { color: #a1a1aa; }"
+    },
+    {
+      "name": "New Badge",
+      "kind": "chip",
+      "description": "Marks an activity-feed item created since this device's last visit — the only filled-background use of a semantic color in the system.",
+      "html": "<span class=\"ds-badge-new\">New</span>",
+      "css": ".ds-badge-new { display: inline-block; background: #d1fae5; color: #047857; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Shared Notebook",
+    "overview": "Splitto looks like a plain paper ledger passed between friends, not a finance dashboard trying to earn your trust with polish. There is no signature color, no gradient, no shadow anywhere in the interface — every screen is built from Tailwind's default neutral (zinc) scale, plain borders, and a small, deliberate set of semantic colors used only where they carry real meaning. The system explicitly rejects Splitwise's busier, ad-supported feel: no toolbars, no upsell banners, no visual competition for attention against the actual task of logging an expense or settling up. Density is low and whitespace is generous. Cards are flat rectangles with a hairline border, nothing more — depth is never implied with a shadow, only with a change in background tone. The one structural flourish the system allows itself is a dashed border, reserved specifically for settlement records.",
+    "keyCharacteristics": [
+      "Zinc neutral scale as the entire base palette; color is spent only on meaning, never on decoration",
+      "Flat by construction — no box-shadow anywhere in the codebase",
+      "Solid border = expense, dashed border = settlement; the one recurring structural signal",
+      "Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app"
+    ],
+    "rules": [
+      { "name": "The One Line Rule", "body": "Depth is conveyed with exactly one hairline border between a card and the page behind it — never a shadow, never a second border, never a gradient edge.", "section": "colors" },
+      { "name": "The Dash Means Money Moved Rule", "body": "A dashed border is the single reserved signal for a settlement. Every other card uses a solid border.", "section": "colors" },
+      { "name": "The One Size Mostly Rule", "body": "The interface runs almost entirely on two sizes — 0.875rem for content, 0.75rem for metadata.", "section": "typography" },
+      { "name": "The Flat-By-Default Rule", "body": "No component in this system ever casts a shadow. If a new component seems to need one to feel grounded, the fix is a border or a background-tone shift.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep color spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look",
+      "Do use the dashed border exclusively for settlements; every other card stays solid",
+      "Do convey depth with a single hairline border and a background-tone step, never a shadow",
+      "Do show a spinner and disable a submit button the instant its action starts"
+    ],
+    "donts": [
+      "Don't add Splitwise's busier, ad-supported feel — no toolbars, no upsell banners",
+      "Don't introduce a shadow anywhere; this system has none by design",
+      "Don't invent a second accent color; the palette is neutral-plus-three-semantic-colors",
+      "Don't use the dashed-border treatment for anything other than a settlement record"
+    ]
+  }
+}
