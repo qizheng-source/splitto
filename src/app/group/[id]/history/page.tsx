@@ -35,13 +35,6 @@ export default async function HistoryPage({
   });
   if (!group) notFound();
 
-  const deletedSettlementRecord = deletedSettlement
-    ? await prisma.settlement.findUnique({
-        where: { id: deletedSettlement },
-        include: { fromPerson: true, toPerson: true },
-      })
-    : null;
-
   const where: Prisma.ExpenseWhereInput = { groupId: group.id, deletedAt: null };
   if (filters.category) where.category = filters.category;
   if (filters.search) where.description = { contains: filters.search, mode: "insensitive" };
@@ -58,15 +51,6 @@ export default async function HistoryPage({
     ];
   }
 
-  const expenses = await prisma.expense.findMany({
-    where,
-    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-    include: {
-      payers: { include: { person: true } },
-      participants: { include: { person: true } },
-    },
-  });
-
   // Settlements aren't spending (no category or description), so they're
   // excluded from the list when a category or text search filter is active,
   // and never affect the charts.
@@ -80,13 +64,32 @@ export default async function HistoryPage({
   if (filters.personId) {
     settlementsWhere.OR = [{ fromPersonId: filters.personId }, { toPersonId: filters.personId }];
   }
-  const settlements = filters.category || filters.search
-    ? []
-    : await prisma.settlement.findMany({
-        where: settlementsWhere,
-        orderBy: [{ date: "desc" }, { id: "desc" }],
-        include: { fromPerson: true, toPerson: true },
-      });
+
+  // None of these three depend on each other's results — only on the where
+  // clauses above — so they run concurrently instead of one after another.
+  const [deletedSettlementRecord, expenses, settlements] = await Promise.all([
+    deletedSettlement
+      ? prisma.settlement.findUnique({
+          where: { id: deletedSettlement },
+          include: { fromPerson: true, toPerson: true },
+        })
+      : Promise.resolve(null),
+    prisma.expense.findMany({
+      where,
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      include: {
+        payers: { include: { person: true } },
+        participants: { include: { person: true } },
+      },
+    }),
+    filters.category || filters.search
+      ? Promise.resolve([])
+      : prisma.settlement.findMany({
+          where: settlementsWhere,
+          orderBy: [{ date: "desc" }, { id: "desc" }],
+          include: { fromPerson: true, toPerson: true },
+        }),
+  ]);
 
   const duplicateExpenseIds = findDuplicateExpenseIds(
     expenses.map((e) => ({ id: e.id, amount: e.amount.toString(), currency: e.currency, date: e.date }))

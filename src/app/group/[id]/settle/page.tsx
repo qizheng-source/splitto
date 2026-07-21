@@ -13,10 +13,11 @@ export default async function SettleUpPage({
 }) {
   const { id } = await params;
 
-  const group = await prisma.group.findUnique({ where: { id } });
+  // Neither query depends on the other's result — both only need the route
+  // param `id` — so they run concurrently instead of one after another.
+  const [group, balances] = await Promise.all([prisma.group.findUnique({ where: { id } }), getGroupBalances(id)]);
   if (!group) notFound();
 
-  const balances = await getGroupBalances(id);
   const suggestions = simplifyDebts(balances);
   const nameById = Object.fromEntries(balances.map((b) => [b.personId, b.name]));
 

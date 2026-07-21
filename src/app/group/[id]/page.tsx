@@ -38,27 +38,29 @@ export default async function GroupPage({
 
   await generateDueRecurringExpenses(group.id);
 
-  const deletedExpenseRecord = deletedExpense
-    ? await prisma.expense.findUnique({
-        where: { id: deletedExpense },
-        select: { description: true },
-      })
-    : null;
-
-  const expenses = await prisma.expense.findMany({
-    where: { groupId: group.id, deletedAt: null },
-    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-    include: {
-      payers: { include: { person: true } },
-      participants: { include: { person: true } },
-    },
-  });
-
-  const settlements = await prisma.settlement.findMany({
-    where: { groupId: group.id, deletedAt: null },
-    orderBy: [{ date: "desc" }, { id: "desc" }],
-    include: { fromPerson: true, toPerson: true },
-  });
+  // These three don't depend on each other — only on group.id, which is
+  // already known — so they run concurrently instead of one after another.
+  const [deletedExpenseRecord, expenses, settlements] = await Promise.all([
+    deletedExpense
+      ? prisma.expense.findUnique({
+          where: { id: deletedExpense },
+          select: { description: true },
+        })
+      : Promise.resolve(null),
+    prisma.expense.findMany({
+      where: { groupId: group.id, deletedAt: null },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      include: {
+        payers: { include: { person: true } },
+        participants: { include: { person: true } },
+      },
+    }),
+    prisma.settlement.findMany({
+      where: { groupId: group.id, deletedAt: null },
+      orderBy: [{ date: "desc" }, { id: "desc" }],
+      include: { fromPerson: true, toPerson: true },
+    }),
+  ]);
 
   const duplicateExpenseIds = findDuplicateExpenseIds(
     expenses.map((e) => ({ id: e.id, amount: e.amount.toString(), currency: e.currency, date: e.date }))

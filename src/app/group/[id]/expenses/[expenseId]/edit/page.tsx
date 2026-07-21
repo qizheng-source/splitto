@@ -11,20 +11,23 @@ export default async function EditExpensePage({
 }) {
   const { id, expenseId } = await params;
 
-  const group = await prisma.group.findUnique({
-    where: { id },
-    include: { people: { orderBy: { createdAt: "asc" } } },
-  });
+  // Neither query depends on the other's result — both only need the route
+  // params — so they run concurrently instead of one after another.
+  const [group, expense] = await Promise.all([
+    prisma.group.findUnique({
+      where: { id },
+      include: { people: { orderBy: { createdAt: "asc" } } },
+    }),
+    prisma.expense.findUnique({
+      where: { id: expenseId },
+      include: {
+        payers: true,
+        participants: true,
+        items: { include: { assignments: true } },
+      },
+    }),
+  ]);
   if (!group) notFound();
-
-  const expense = await prisma.expense.findUnique({
-    where: { id: expenseId },
-    include: {
-      payers: true,
-      participants: true,
-      items: { include: { assignments: true } },
-    },
-  });
   if (!expense || expense.groupId !== group.id || expense.deletedAt) notFound();
 
   // A person archived after this expense was logged must stay visible here

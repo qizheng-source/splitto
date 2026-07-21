@@ -12,17 +12,20 @@ export default async function ExpenseDetailPage({
 }) {
   const { id, expenseId } = await params;
 
-  const group = await prisma.group.findUnique({ where: { id } });
+  // Neither query depends on the other's result — both only need the route
+  // params — so they run concurrently instead of one after another.
+  const [group, expense] = await Promise.all([
+    prisma.group.findUnique({ where: { id } }),
+    prisma.expense.findUnique({
+      where: { id: expenseId },
+      include: {
+        payers: { include: { person: true } },
+        participants: { include: { person: true } },
+        items: { include: { assignments: { include: { person: true } } } },
+      },
+    }),
+  ]);
   if (!group) notFound();
-
-  const expense = await prisma.expense.findUnique({
-    where: { id: expenseId },
-    include: {
-      payers: { include: { person: true } },
-      participants: { include: { person: true } },
-      items: { include: { assignments: { include: { person: true } } } },
-    },
-  });
   if (!expense || expense.groupId !== group.id || expense.deletedAt) notFound();
 
   const potentialDuplicates = await findPotentialDuplicates({

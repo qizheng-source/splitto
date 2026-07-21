@@ -13,13 +13,18 @@ export default async function GroupSettingsPage({
 }) {
   const { id } = await params;
 
-  const group = await prisma.group.findUnique({
-    where: { id },
-    include: { people: { orderBy: { createdAt: "asc" } } },
-  });
+  // Neither query depends on the other's result — both only need the route
+  // param `id` — so they run concurrently instead of one after another.
+  const [group, expenseCount] = await Promise.all([
+    prisma.group.findUnique({
+      where: { id },
+      include: { people: { orderBy: { createdAt: "asc" } } },
+    }),
+    prisma.expense.count({ where: { groupId: id } }),
+  ]);
   if (!group) notFound();
 
-  const everHadAnExpense = (await prisma.expense.count({ where: { groupId: id } })) > 0;
+  const everHadAnExpense = expenseCount > 0;
 
   const activePeople = group.people.filter((p) => !p.archivedAt);
   const archivedPeople = group.people.filter((p) => p.archivedAt);

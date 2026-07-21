@@ -9,23 +9,27 @@ export default async function NewExpensePage({
 }) {
   const { id } = await params;
 
-  const group = await prisma.group.findUnique({
-    where: { id },
-    include: { people: { where: { archivedAt: null }, orderBy: { createdAt: "asc" } } },
-  });
+  // Neither query depends on the other's result — the second only needs the
+  // route param `id` (same value as group.id) — so they run concurrently
+  // instead of one after another.
+  const [group, lastExpense] = await Promise.all([
+    prisma.group.findUnique({
+      where: { id },
+      include: { people: { where: { archivedAt: null }, orderBy: { createdAt: "asc" } } },
+    }),
+    // Default the currency picker to whatever was used most recently in this
+    // group — e.g. after the first MYR expense on a Malaysia trip, every
+    // subsequent one defaults to MYR too instead of back to the home currency.
+    prisma.expense.findFirst({
+      where: { groupId: id },
+      orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+      select: { currency: true },
+    }),
+  ]);
 
   if (!group) {
     notFound();
   }
-
-  // Default the currency picker to whatever was used most recently in this
-  // group — e.g. after the first MYR expense on a Malaysia trip, every
-  // subsequent one defaults to MYR too instead of back to the home currency.
-  const lastExpense = await prisma.expense.findFirst({
-    where: { groupId: group.id },
-    orderBy: [{ date: "desc" }, { createdAt: "desc" }],
-    select: { currency: true },
-  });
   const defaultCurrency = lastExpense?.currency ?? group.homeCurrency;
 
   return (

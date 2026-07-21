@@ -11,13 +11,16 @@ export default async function EditSettlementPage({
 }) {
   const { id, settlementId } = await params;
 
-  const group = await prisma.group.findUnique({
-    where: { id },
-    include: { people: { orderBy: { createdAt: "asc" } } },
-  });
+  // Neither query depends on the other's result — both only need the route
+  // params — so they run concurrently instead of one after another.
+  const [group, settlement] = await Promise.all([
+    prisma.group.findUnique({
+      where: { id },
+      include: { people: { orderBy: { createdAt: "asc" } } },
+    }),
+    prisma.settlement.findUnique({ where: { id: settlementId } }),
+  ]);
   if (!group) notFound();
-
-  const settlement = await prisma.settlement.findUnique({ where: { id: settlementId } });
   if (!settlement || settlement.groupId !== group.id || settlement.deletedAt) notFound();
 
   return (

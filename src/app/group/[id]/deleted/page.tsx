@@ -15,17 +15,20 @@ export default async function DeletedItemsPage({
   const group = await prisma.group.findUnique({ where: { id } });
   if (!group) notFound();
 
-  const deletedExpenses = await prisma.expense.findMany({
-    where: { groupId: group.id, deletedAt: { not: null } },
-    orderBy: { deletedAt: "desc" },
-    include: { payers: { include: { person: true } } },
-  });
-
-  const deletedSettlements = await prisma.settlement.findMany({
-    where: { groupId: group.id, deletedAt: { not: null } },
-    orderBy: { deletedAt: "desc" },
-    include: { fromPerson: true, toPerson: true },
-  });
+  // Neither query depends on the other's result — both only need group.id —
+  // so they run concurrently instead of one after another.
+  const [deletedExpenses, deletedSettlements] = await Promise.all([
+    prisma.expense.findMany({
+      where: { groupId: group.id, deletedAt: { not: null } },
+      orderBy: { deletedAt: "desc" },
+      include: { payers: { include: { person: true } } },
+    }),
+    prisma.settlement.findMany({
+      where: { groupId: group.id, deletedAt: { not: null } },
+      orderBy: { deletedAt: "desc" },
+      include: { fromPerson: true, toPerson: true },
+    }),
+  ]);
 
   type DeletedItem =
     | { type: "expense"; deletedAt: Date; expense: (typeof deletedExpenses)[number] }
