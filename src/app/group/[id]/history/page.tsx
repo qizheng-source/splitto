@@ -22,6 +22,7 @@ export default async function HistoryPage({
     to?: string;
     search?: string;
     deletedSettlement?: string;
+    page?: string;
   }>;
 }) {
   const { id } = await params;
@@ -112,6 +113,29 @@ export default async function HistoryPage({
   const hasFilters = Boolean(
     filters.personId || filters.category || filters.from || filters.to || filters.search
   );
+
+  // The charts/totals above still need every matching transaction to stay
+  // accurate, but rendering the raw list is what gets slow once a group has
+  // been running a long time — so only a page's worth is sliced for display.
+  const PAGE_SIZE = 25;
+  const totalPages = Math.max(1, Math.ceil(transactions.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(1, Number(filters.page) || 1), totalPages);
+  const pagedTransactions = transactions.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
+  function pageHref(page: number) {
+    const params = new URLSearchParams();
+    if (filters.search) params.set("search", filters.search);
+    if (filters.personId) params.set("personId", filters.personId);
+    if (filters.category) params.set("category", filters.category);
+    if (filters.from) params.set("from", filters.from);
+    if (filters.to) params.set("to", filters.to);
+    if (page > 1) params.set("page", String(page));
+    const query = params.toString();
+    return `/group/${id}/history${query ? `?${query}` : ""}`;
+  }
 
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50 px-6 py-16 dark:bg-black">
@@ -241,14 +265,22 @@ export default async function HistoryPage({
         />
 
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Transactions
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Transactions
+            </span>
+            {transactions.length > 0 && (
+              <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                {(currentPage - 1) * PAGE_SIZE + 1}–
+                {Math.min(currentPage * PAGE_SIZE, transactions.length)} of {transactions.length}
+              </span>
+            )}
+          </div>
           {transactions.length === 0 ? (
             <p className="text-sm text-zinc-400 dark:text-zinc-600">Nothing matches these filters.</p>
           ) : (
             <ul className="flex flex-col gap-2">
-              {transactions.map((tx) =>
+              {pagedTransactions.map((tx) =>
                 tx.type === "expense" ? (
                   <li key={`expense-${tx.expense.id}`}>
                     <Link
@@ -314,6 +346,33 @@ export default async function HistoryPage({
                 )
               )}
             </ul>
+          )}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-1">
+              {currentPage > 1 ? (
+                <Link
+                  href={pageHref(currentPage - 1)}
+                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                >
+                  ← Newer
+                </Link>
+              ) : (
+                <span />
+              )}
+              <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                Page {currentPage} of {totalPages}
+              </span>
+              {currentPage < totalPages ? (
+                <Link
+                  href={pageHref(currentPage + 1)}
+                  className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+                >
+                  Older →
+                </Link>
+              ) : (
+                <span />
+              )}
+            </div>
           )}
         </div>
       </div>
