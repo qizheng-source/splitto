@@ -5,6 +5,8 @@ import { ShareLinkBox } from "@/components/ShareLinkBox";
 import { generateDueRecurringExpenses } from "@/lib/recurring";
 import { formatMoney } from "@/lib/money";
 import { UndoToast } from "@/components/UndoToast";
+import { findDuplicateExpenseIds } from "@/lib/duplicates";
+import { GroupActivityFeed, type FeedDateGroup, type FeedItem } from "@/components/GroupActivityFeed";
 
 export default async function GroupPage({
   params,
@@ -32,6 +34,8 @@ export default async function GroupPage({
     );
   }
 
+  const activePeople = group.people.filter((p) => !p.archivedAt);
+
   await generateDueRecurringExpenses(group.id);
 
   const deletedExpenseRecord = deletedExpense
@@ -56,6 +60,10 @@ export default async function GroupPage({
     include: { fromPerson: true, toPerson: true },
   });
 
+  const duplicateExpenseIds = findDuplicateExpenseIds(
+    expenses.map((e) => ({ id: e.id, amount: e.amount.toString(), currency: e.currency, date: e.date }))
+  );
+
   type Transaction =
     | { type: "expense"; date: Date; expense: (typeof expenses)[number] }
     | { type: "settlement"; date: Date; settlement: (typeof settlements)[number] };
@@ -69,7 +77,7 @@ export default async function GroupPage({
     })),
   ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  const transactionsByDate = new Map<string, Transaction[]>();
+  const feedGroupsByDate = new Map<string, FeedItem[]>();
   for (const tx of transactions) {
     const dateKey = tx.date.toLocaleDateString(undefined, {
       weekday: "long",
@@ -77,13 +85,53 @@ export default async function GroupPage({
       month: "long",
       day: "numeric",
     });
-    const bucket = transactionsByDate.get(dateKey);
+
+    const item: FeedItem =
+      tx.type === "expense"
+        ? {
+            type: "expense",
+            id: tx.expense.id,
+            createdAtIso: tx.expense.createdAt.toISOString(),
+            description: tx.expense.description,
+            amountLabel: formatMoney(tx.expense.amount.toString()),
+            currency: tx.expense.currency,
+            metaLine: [
+              tx.expense.createdAt.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }),
+              tx.expense.category,
+              tx.expense.isRecurring ? `repeats ${tx.expense.recurrenceInterval?.toLowerCase()}` : null,
+              tx.expense.currency !== group.homeCurrency
+                ? `${formatMoney(tx.expense.convertedAmount.toString())} ${group.homeCurrency}`
+                : null,
+            ]
+              .filter(Boolean)
+              .join(" · "),
+            paidByLabel: `Paid by ${tx.expense.payers.map((p) => p.person.name).join(", ")}`,
+            isDuplicate: duplicateExpenseIds.has(tx.expense.id),
+          }
+        : {
+            type: "settlement",
+            id: tx.settlement.id,
+            createdAtIso: tx.settlement.createdAt.toISOString(),
+            fromToLabel: `${tx.settlement.fromPerson.name} → ${tx.settlement.toPerson.name}`,
+            amountLabel: formatMoney(tx.settlement.amount.toString()),
+            currency: tx.settlement.currency,
+            timeLabel: tx.settlement.createdAt.toLocaleTimeString(undefined, {
+              hour: "numeric",
+              minute: "2-digit",
+            }),
+          };
+
+    const bucket = feedGroupsByDate.get(dateKey);
     if (bucket) {
-      bucket.push(tx);
+      bucket.push(item);
     } else {
-      transactionsByDate.set(dateKey, [tx]);
+      feedGroupsByDate.set(dateKey, [item]);
     }
   }
+
+  const feedGroups: FeedDateGroup[] = Array.from(feedGroupsByDate.entries()).map(
+    ([dateLabel, items]) => ({ dateLabel, items })
+  );
 
   const headersList = await headers();
   const host = headersList.get("host");
@@ -131,75 +179,7 @@ export default async function GroupPage({
           {transactions.length === 0 ? (
             <p className="text-sm text-zinc-400 dark:text-zinc-600">No activity yet — add your first expense.</p>
           ) : (
-            <div className="flex flex-col gap-4">
-              {Array.from(transactionsByDate.entries()).map(([dateLabel, dayTransactions]) => (
-                <div key={dateLabel} className="flex flex-col gap-2">
-                  <span className="text-xs font-medium text-zinc-400 dark:text-zinc-600">{dateLabel}</span>
-                  <ul className="flex flex-col gap-2">
-                    {dayTransactions.map((tx) =>
-                      tx.type === "expense" ? (
-                        <li key={`expense-${tx.expense.id}`}>
-                          <Link
-                            href={`/group/${group.id}/expenses/${tx.expense.id}`}
-                            className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                                {tx.expense.description}
-                              </span>
-                              <span className="text-zinc-700 dark:text-zinc-300">
-                                {formatMoney(tx.expense.amount.toString())} {tx.expense.currency}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                              <span>
-                                {tx.expense.createdAt.toLocaleTimeString(undefined, {
-                                  hour: "numeric",
-                                  minute: "2-digit",
-                                })}
-                                {tx.expense.category ? ` · ${tx.expense.category}` : ""}
-                                {tx.expense.isRecurring
-                                  ? ` · repeats ${tx.expense.recurrenceInterval?.toLowerCase()}`
-                                  : ""}
-                                {tx.expense.currency !== group.homeCurrency
-                                  ? ` · ${formatMoney(tx.expense.convertedAmount.toString())} ${group.homeCurrency}`
-                                  : ""}
-                              </span>
-                              <span>
-                                Paid by {tx.expense.payers.map((p) => p.person.name).join(", ")}
-                              </span>
-                            </div>
-                          </Link>
-                        </li>
-                      ) : (
-                        <li key={`settlement-${tx.settlement.id}`}>
-                          <Link
-                            href={`/group/${group.id}/settlements/${tx.settlement.id}`}
-                            className="flex flex-col gap-1 rounded-lg border border-dashed border-zinc-300 bg-white px-4 py-3 text-sm hover:border-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-zinc-600"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="font-medium text-zinc-900 dark:text-zinc-100">
-                                {tx.settlement.fromPerson.name} → {tx.settlement.toPerson.name}
-                              </span>
-                              <span className="text-zinc-700 dark:text-zinc-300">
-                                {formatMoney(tx.settlement.amount.toString())} {tx.settlement.currency}
-                              </span>
-                            </div>
-                            <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                              {tx.settlement.createdAt.toLocaleTimeString(undefined, {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}{" "}
-                              · Settlement
-                            </div>
-                          </Link>
-                        </li>
-                      )
-                    )}
-                  </ul>
-                </div>
-              ))}
-            </div>
+            <GroupActivityFeed groupId={group.id} groups={feedGroups} />
           )}
         </div>
 
@@ -211,11 +191,19 @@ export default async function GroupPage({
             <ShareLinkBox url={shareUrl} />
 
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-                Participants
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+                  Participants
+                </span>
+                <Link
+                  href={`/group/${group.id}/settings`}
+                  className="text-xs font-medium text-zinc-700 underline underline-offset-2 dark:text-zinc-300"
+                >
+                  Group settings
+                </Link>
+              </div>
               <ul className="flex flex-col gap-2">
-                {group.people.map((person) => (
+                {activePeople.map((person) => (
                   <li
                     key={person.id}
                     className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"

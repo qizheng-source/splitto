@@ -34,11 +34,12 @@ model Group {
 }
 
 model Person {
-  id        String   @id @default(cuid())
-  groupId   String
-  group     Group    @relation(fields: [groupId], references: [id])
-  name      String
-  createdAt DateTime @default(now())
+  id         String    @id @default(cuid())
+  groupId    String
+  group      Group     @relation(fields: [groupId], references: [id])
+  name       String
+  createdAt  DateTime  @default(now())
+  archivedAt DateTime?
 
   paidExpenses    ExpensePayer[]
   owedExpenses    ExpenseParticipant[]

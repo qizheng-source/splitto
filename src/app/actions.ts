@@ -49,6 +49,90 @@ export async function addParticipant(formData: FormData) {
 
   revalidatePath(`/group/${groupId}`);
   revalidatePath(`/group/${groupId}/people/new`);
+  revalidatePath(`/group/${groupId}/settings`);
+}
+
+export async function updateGroupSettings(formData: FormData) {
+  const groupId = String(formData.get("groupId") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  const homeCurrency = String(formData.get("homeCurrency") ?? "").trim();
+
+  if (!groupId || !name || !homeCurrency) {
+    throw new Error("Group name and home currency are required.");
+  }
+
+  const group = await prisma.group.findUnique({ where: { id: groupId } });
+  if (!group) {
+    throw new Error("Group not found.");
+  }
+
+  // The home currency can only change before any expense ever existed —
+  // once one has, its stored conversion is locked to the old currency, and
+  // there'd be no sane way to retroactively recompute it (including expenses
+  // that are only soft-deleted, since those remain restorable later).
+  const everHadAnExpense = (await prisma.expense.count({ where: { groupId } })) > 0;
+
+  await prisma.group.update({
+    where: { id: groupId },
+    data: {
+      name,
+      homeCurrency: everHadAnExpense ? group.homeCurrency : homeCurrency,
+    },
+  });
+
+  revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/settings`);
+  redirect(`/group/${groupId}/settings`);
+}
+
+export async function archiveParticipant(formData: FormData) {
+  const groupId = String(formData.get("groupId") ?? "");
+  const personId = String(formData.get("personId") ?? "");
+
+  if (!groupId || !personId) {
+    throw new Error("Missing person id.");
+  }
+
+  const [target, activeCount] = await Promise.all([
+    prisma.person.findUnique({ where: { id: personId } }),
+    prisma.person.count({ where: { groupId, archivedAt: null } }),
+  ]);
+
+  if (!target || target.groupId !== groupId) {
+    throw new Error("Person not found.");
+  }
+  if (!target.archivedAt && activeCount <= 1) {
+    throw new Error("Can't archive the last remaining person in a group.");
+  }
+
+  await prisma.person.update({
+    where: { id: personId },
+    data: { archivedAt: new Date() },
+  });
+
+  revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/settings`);
+  revalidatePath(`/group/${groupId}/people/new`);
+  revalidatePath(`/group/${groupId}/expenses/new`);
+}
+
+export async function restoreParticipant(formData: FormData) {
+  const groupId = String(formData.get("groupId") ?? "");
+  const personId = String(formData.get("personId") ?? "");
+
+  if (!groupId || !personId) {
+    throw new Error("Missing person id.");
+  }
+
+  await prisma.person.update({
+    where: { id: personId },
+    data: { archivedAt: null },
+  });
+
+  revalidatePath(`/group/${groupId}`);
+  revalidatePath(`/group/${groupId}/settings`);
+  revalidatePath(`/group/${groupId}/people/new`);
+  revalidatePath(`/group/${groupId}/expenses/new`);
 }
 
 export async function recordSettlement(formData: FormData) {

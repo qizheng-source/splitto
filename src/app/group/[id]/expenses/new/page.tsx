@@ -11,7 +11,7 @@ export default async function NewExpensePage({
 
   const group = await prisma.group.findUnique({
     where: { id },
-    include: { people: { orderBy: { createdAt: "asc" } } },
+    include: { people: { where: { archivedAt: null }, orderBy: { createdAt: "asc" } } },
   });
 
   if (!group) {

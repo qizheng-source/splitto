@@ -27,6 +27,16 @@ export default async function EditExpensePage({
   });
   if (!expense || expense.groupId !== group.id || expense.deletedAt) notFound();
 
+  // A person archived after this expense was logged must stay visible here
+  // so their existing payer/participant/item row doesn't silently disappear —
+  // they just can't be newly added to expenses beyond this one.
+  const involvedPersonIds = new Set<string>([
+    ...expense.payers.map((p) => p.personId),
+    ...expense.participants.map((p) => p.personId),
+    ...expense.items.flatMap((item) => item.assignments.map((a) => a.personId)),
+  ]);
+  const editablePeople = group.people.filter((p) => !p.archivedAt || involvedPersonIds.has(p.id));
+
   const isPresetCategory =
     expense.category !== null && (EXPENSE_CATEGORIES as readonly string[]).includes(expense.category);
 
@@ -43,7 +53,7 @@ export default async function EditExpensePage({
       amount: formatMoney(p.amountPaid.toString()),
     })),
     evenParticipantIds: expense.participants.map((p) => p.personId),
-    exactRows: group.people.map((person) => {
+    exactRows: editablePeople.map((person) => {
       const participant = expense.participants.find((p) => p.personId === person.id);
       return {
         personId: person.id,
@@ -55,7 +65,7 @@ export default async function EditExpensePage({
     // Shares aren't stored (only the resulting dollar amount is), so editing a
     // shares-split expense resets everyone to 1 share each — same starting
     // point as a fresh expense, just with the previous participants pre-checked.
-    shareRows: group.people.map((person) => ({
+    shareRows: editablePeople.map((person) => ({
       personId: person.id,
       included: expense.participants.some((p) => p.personId === person.id),
       shares: 1,
@@ -81,7 +91,7 @@ export default async function EditExpensePage({
         <AddExpenseForm
           groupId={group.id}
           homeCurrency={group.homeCurrency}
-          people={group.people}
+          people={editablePeople.map((p) => ({ id: p.id, name: p.name, archived: Boolean(p.archivedAt) }))}
           expenseId={expense.id}
           initialValues={initialValues}
         />

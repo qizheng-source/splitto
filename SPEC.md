@@ -34,6 +34,10 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - DECIDED: People can be added to a group at any time (not just at creation) via an "Add participant" button on the group page — anyone with the link can add a new person's name.
 - DECIDED: Opening the group link leads straight to recent activity (Add/Settle/History buttons + the transaction list), not the participant list or share-link box — those are tucked into a collapsed "Group info & share link" section at the bottom, since they're only needed occasionally, not every visit.
 - DECIDED: The group page's transaction list shows settlements alongside expenses (matching History), so it never looks like recorded payments have vanished.
+- DECIDED: A group's name can be renamed at any time via a "Group settings" page.
+- DECIDED: A participant can be "archived" (soft-removed) rather than deleted — hidden from pickers for new expenses/settlements, but every past expense, balance, and settlement involving them stays fully intact and visible. Archiving the last remaining active person is blocked. Archived people can be restored at any time.
+- DECIDED: The group page (and History) flag expenses that might be duplicates — matched on exact amount + exact currency + same calendar day, never on description text (since two people logging the same bill often word it differently). This is a soft, non-blocking warning only — both matching expenses' descriptions/payers are shown so a human makes the final call.
+- DECIDED: Each device remembers (via localStorage, not the shared database) when it last visited a group, and the group page marks any expense/settlement created since then with a "New" badge — so a person who steps away can quickly catch up on what others added, without needing an account or push notifications.
 
 ## 4. Currency
 - Multi-currency support per group/expense (Tricount-style, useful for travel)

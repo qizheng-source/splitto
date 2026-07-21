@@ -8,6 +8,7 @@ import { BarChart } from "@/components/charts/BarChart";
 import { TrendChart } from "@/components/charts/TrendChart";
 import type { Prisma } from "@/generated/prisma/client";
 import { UndoToast } from "@/components/UndoToast";
+import { findDuplicateExpenseIds } from "@/lib/duplicates";
 
 export default async function HistoryPage({
   params,
@@ -86,6 +87,10 @@ export default async function HistoryPage({
         include: { fromPerson: true, toPerson: true },
       });
 
+  const duplicateExpenseIds = findDuplicateExpenseIds(
+    expenses.map((e) => ({ id: e.id, amount: e.amount.toString(), currency: e.currency, date: e.date }))
+  );
+
   const categoryTotals = totalsByCategory(expenses);
   const personTotals = totalsByPerson(expenses);
   const dayTotals = totalsByDay(expenses);
@@ -149,6 +154,7 @@ export default async function HistoryPage({
                 {group.people.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}
+                    {p.archivedAt ? " (archived)" : ""}
                   </option>
                 ))}
               </select>
@@ -250,8 +256,16 @@ export default async function HistoryPage({
                       className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white px-4 py-3 text-sm hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-medium text-zinc-900 dark:text-zinc-100">
+                        <span className="flex items-center gap-1.5 font-medium text-zinc-900 dark:text-zinc-100">
                           {tx.expense.description}
+                          {duplicateExpenseIds.has(tx.expense.id) && (
+                            <span
+                              title="Might be a duplicate — same amount and day as another expense"
+                              className="text-amber-500"
+                            >
+                              ⚠
+                            </span>
+                          )}
                         </span>
                         <span className="text-zinc-700 dark:text-zinc-300">
                           {formatMoney(tx.expense.amount.toString())} {tx.expense.currency}

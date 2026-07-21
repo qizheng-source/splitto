@@ -48,9 +48,17 @@ export default async function AddPeoplePage({
         </form>
 
         <div className="flex flex-col gap-2">
-          <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
-            Currently in this group
-          </span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-medium uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+              Currently in this group
+            </span>
+            <Link
+              href={`/group/${group.id}/settings`}
+              className="text-xs font-medium text-zinc-700 underline underline-offset-2 dark:text-zinc-300"
+            >
+              Manage
+            </Link>
+          </div>
           <ul className="flex flex-col gap-2">
             {group.people.map((person) => (
               <li
@@ -58,6 +66,7 @@ export default async function AddPeoplePage({
                 className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200"
               >
                 {person.name}
+                {person.archivedAt ? " (archived)" : ""}
               </li>
             ))}
           </ul>

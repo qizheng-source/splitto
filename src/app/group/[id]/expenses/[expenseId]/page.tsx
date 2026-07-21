@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/money";
 import { ExpenseActionsMenu } from "@/components/ExpenseActionsMenu";
+import { findPotentialDuplicates } from "@/lib/duplicates";
 
 export default async function ExpenseDetailPage({
   params,
@@ -23,6 +24,14 @@ export default async function ExpenseDetailPage({
     },
   });
   if (!expense || expense.groupId !== group.id || expense.deletedAt) notFound();
+
+  const potentialDuplicates = await findPotentialDuplicates({
+    groupId: group.id,
+    expenseId: expense.id,
+    amount: expense.amount.toString(),
+    currency: expense.currency,
+    date: expense.date,
+  });
 
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50 px-4 py-6 dark:bg-black sm:px-6 sm:py-16">
@@ -98,6 +107,36 @@ export default async function ExpenseDetailPage({
             </a>
           )}
         </div>
+
+        {potentialDuplicates.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-900 dark:bg-amber-950">
+            <span className="font-medium text-amber-800 dark:text-amber-400">
+              ⚠ This might be a duplicate
+            </span>
+            <p className="text-amber-700 dark:text-amber-500">
+              Same amount ({formatMoney(expense.amount.toString())} {expense.currency}) was also logged
+              on the same day as:
+            </p>
+            <ul className="flex flex-col gap-1">
+              {potentialDuplicates.map((dup) => (
+                <li key={dup.id}>
+                  <Link
+                    href={`/group/${group.id}/expenses/${dup.id}`}
+                    className="font-medium text-amber-800 underline underline-offset-2 dark:text-amber-400"
+                  >
+                    &quot;{dup.description}&quot;
+                  </Link>
+                  {dup.payerNames.length > 0 && (
+                    <span className="text-amber-700 dark:text-amber-500">
+                      {" "}
+                      — paid by {dup.payerNames.join(", ")}
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {expense.splitType === "ITEM" && expense.items.length > 0 && (
           <div className="flex flex-col gap-2">

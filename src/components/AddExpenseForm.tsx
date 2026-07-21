@@ -7,7 +7,12 @@ import { toCents, fromCents } from "@/lib/money";
 import { splitEvenly, distributeProportionally } from "@/lib/splitting";
 import { SubmitButton } from "@/components/SubmitButton";
 
-type Person = { id: string; name: string };
+type Person = { id: string; name: string; archived?: boolean };
+
+function displayName(person: Person | undefined) {
+  if (!person) return "";
+  return person.archived ? `${person.name} (archived)` : person.name;
+}
 type SplitType = "EVEN" | "EXACT" | "ITEM" | "SHARES";
 
 type PayerRow = { personId: string; amount: string };
@@ -397,7 +402,7 @@ export function AddExpenseForm({
                       checked={included}
                       onChange={() => toggleEvenParticipant(p.id)}
                     />
-                    {p.name}
+                    {displayName(p)}
                   </span>
                   {included && (
                     <span className="text-zinc-500 dark:text-zinc-400">
@@ -428,7 +433,7 @@ export function AddExpenseForm({
                       checked={row.included}
                       onChange={(e) => updateExactRow(row.personId, { included: e.target.checked })}
                     />
-                    {person?.name}
+                    {displayName(person)}
                   </label>
                   <input
                     type="number"
@@ -495,7 +500,7 @@ export function AddExpenseForm({
                       checked={row.included}
                       onChange={(e) => updateShareRow(row.personId, { included: e.target.checked })}
                     />
-                    {person?.name}
+                    {displayName(person)}
                   </label>
                   <div className="flex items-center justify-end gap-2">
                     <button
@@ -586,7 +591,7 @@ export function AddExpenseForm({
                       checked={item.personIds.includes(p.id)}
                       onChange={() => toggleItemPerson(index, p.id)}
                     />
-                    {p.name}
+                    {displayName(p)}
                   </label>
                 ))}
               </div>
@@ -617,7 +622,7 @@ export function AddExpenseForm({
               >
                 {people.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {p.name}
+                    {displayName(p)}
                   </option>
                 ))}
               </select>
