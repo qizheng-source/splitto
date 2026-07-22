@@ -27,7 +27,7 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col font-sans">
         {children}
         <footer className="bg-zinc-50 px-6 py-4 text-center text-xs text-zinc-400 dark:bg-black dark:text-zinc-600">
           Splitto is free, open, and private — no ads, no data selling, nothing tracked beyond what this group needs.
