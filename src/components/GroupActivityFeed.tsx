@@ -88,7 +88,7 @@ export function GroupActivityFeed({ groupId, groups }: { groupId: string; groups
                           </span>
                         )}
                       </span>
-                      <span className="text-zinc-700 dark:text-zinc-300">
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                         {item.amountLabel} {item.currency}
                       </span>
                     </div>
@@ -113,7 +113,7 @@ export function GroupActivityFeed({ groupId, groups }: { groupId: string; groups
                         )}
                         {item.fromToLabel}
                       </span>
-                      <span className="text-zinc-700 dark:text-zinc-300">
+                      <span className="text-zinc-500 dark:text-zinc-500">
                         {item.amountLabel} {item.currency}
                       </span>
                     </div>

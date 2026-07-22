@@ -150,31 +150,33 @@ export default async function GroupPage({
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex flex-col gap-2">
           <Link
             href={`/group/${group.id}/expenses/new`}
-            className="flex-1 rounded-lg bg-zinc-900 px-5 py-3 text-center text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="rounded-lg bg-zinc-900 px-5 py-3.5 text-center text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
           >
             + Add expense
           </Link>
-          <Link
-            href={`/group/${group.id}/people/new`}
-            className="flex-1 rounded-lg border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            + Add person
-          </Link>
-          <Link
-            href={`/group/${group.id}/settle`}
-            className="flex-1 rounded-lg border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            Settle up
-          </Link>
-          <Link
-            href={`/group/${group.id}/history`}
-            className="flex-1 rounded-lg border border-zinc-300 px-5 py-3 text-center text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-          >
-            History
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href={`/group/${group.id}/people/new`}
+              className="flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-center text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              + Add person
+            </Link>
+            <Link
+              href={`/group/${group.id}/settle`}
+              className="flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-center text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              Settle up
+            </Link>
+            <Link
+              href={`/group/${group.id}/history`}
+              className="flex-1 rounded-lg border border-zinc-300 px-3 py-2 text-center text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-400 dark:hover:bg-zinc-800"
+            >
+              History
+            </Link>
+          </div>
         </div>
 
         <div className="flex flex-col gap-2">
