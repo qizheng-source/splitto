@@ -359,7 +359,7 @@ export function AddExpenseForm({
               onClick={() => setSplitType(type)}
               className={`flex-1 rounded-lg border px-3 py-2 text-sm font-medium ${
                 splitType === type
-                  ? "border-zinc-900 bg-zinc-900 text-white dark:border-zinc-100 dark:bg-zinc-100 dark:text-zinc-900"
+                  ? "border-accent bg-accent text-accent-ink"
                   : "border-zinc-300 text-zinc-700 dark:border-zinc-700 dark:text-zinc-300"
               }`}
             >

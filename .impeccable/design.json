@@ -84,17 +84,18 @@
       "Flat by construction — no box-shadow anywhere in the codebase",
       "Solid border = expense, dashed border = settlement; the one recurring structural signal",
       "Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app",
-      "Light/dark is an explicit per-device toggle, not just a system-preference fallback"
+      "Light/dark is an explicit per-device toggle at top-right of every page, not just a system-preference fallback"
     ],
     "rules": [
       { "name": "The One Line Rule", "body": "Depth is conveyed with exactly one hairline border between a card and the page behind it — never a shadow, never a second border, never a gradient edge.", "section": "colors" },
       { "name": "The Dash Means Money Moved Rule", "body": "A dashed border is the single reserved signal for a settlement. Every other card uses a solid border.", "section": "colors" },
-      { "name": "The One Accent Rule", "body": "Terracotta appears in exactly two roles — the primary button and \"Paid by X\" — and nowhere else.", "section": "colors" },
+      { "name": "The One Accent Rule", "body": "Terracotta appears in exactly three roles — the primary button, \"Paid by X\", and the split-type picker's selected state — and nowhere else.", "section": "colors" },
       { "name": "The One Size Mostly Rule", "body": "The interface runs almost entirely on two sizes — 0.875rem for content, 0.75rem for metadata.", "section": "typography" },
       { "name": "The Flat-By-Default Rule", "body": "No component in this system ever casts a shadow. If a new component seems to need one to feel grounded, the fix is a border or a background-tone shift.", "section": "elevation" }
     ],
     "dos": [
-      "Do spend terracotta only on the primary button and \"Paid by X\" — nowhere else",
+      "Do spend terracotta only on its three documented roles (primary button, \"Paid by X\", split-type picker selection) — nowhere else",
+      "Do give every tappable control at least a 44x44px target on a phone-first surface",
       "Do keep the semantic colors spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look",
       "Do use the dashed border exclusively for settlements; every other card stays solid",
       "Do convey depth with a single hairline border and a background-tone step, never a shadow",
@@ -103,7 +104,7 @@
     "donts": [
       "Don't add Splitwise's busier, ad-supported feel — no toolbars, no upsell banners",
       "Don't introduce a shadow anywhere; this system has none by design",
-      "Don't add a second accent color, or spend terracotta anywhere beyond its two documented roles",
+      "Don't add a second accent color, or spend terracotta anywhere beyond its three documented roles",
       "Don't use the dashed-border treatment for anything other than a settlement record"
     ]
   }

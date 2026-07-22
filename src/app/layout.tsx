@@ -33,12 +33,14 @@ export default function RootLayout({
         <Script id="theme-boot" strategy="beforeInteractive">
           {`(function(){try{var s=localStorage.getItem("splitto:theme");var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d);document.documentElement.classList.toggle("light",!d);}catch(e){}})();`}
         </Script>
+        <div className="flex justify-end px-4 py-2 sm:px-6">
+          <ThemeToggle />
+        </div>
         {children}
-        <footer className="flex flex-col items-center gap-3 bg-zinc-50 px-6 py-4 text-center dark:bg-black">
+        <footer className="bg-zinc-50 px-6 py-4 text-center dark:bg-black">
           <p className="text-xs text-zinc-400 dark:text-zinc-600">
             Splitto is free, open, and private — no ads, no data selling, nothing tracked beyond what this group needs.
           </p>
-          <ThemeToggle />
         </footer>
       </body>
     </html>

@@ -97,14 +97,14 @@ Density is low and whitespace is generous. Cards are flat rectangles with a hair
 - Flat by construction — no box-shadow anywhere in the codebase
 - Solid border = expense, dashed border = settlement; the one recurring structural signal
 - Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app
-- Light and dark are both explicit, user-chosen per-device states (a footer toggle), not just a system-preference fallback
+- Light and dark are both explicit, user-chosen per-device states (a top-right toggle, visible the instant any page loads), not just a system-preference fallback
 
 ## 2. Colors
 
 The palette is almost entirely neutral, warmed by exactly one real accent; the other non-neutral colors are semantic signals, not brand expression.
 
 ### Primary
-- **Notebook Terracotta** (`#b8492e` light / `#e8734f` dark, `accent`): worn-leather-journal warmth — the one deliberate color in the system, spent on exactly two things: the primary action button (Add expense, Save changes, and similar) and the "Paid by X" line in the activity feed. Never used decoratively, never used twice as much as that.
+- **Notebook Terracotta** (`#b8492e` light / `#e8734f` dark, `accent`): worn-leather-journal warmth — the one deliberate color in the system, spent on exactly three things: the primary action button (Add expense, Save changes, and similar), the "Paid by X" line in the activity feed, and the selected state of the split-type picker (Even/Exact/Item/Shares). Never used decoratively, never used beyond those three.
 - **Zinc Ink** (`#18181b` light / `#f4f4f5` dark, `ink-primary`): heading and body text. Inverts between modes rather than staying fixed — the darkest neutral in light mode, the lightest in dark mode.
 
 ### Secondary
@@ -125,7 +125,7 @@ The palette is almost entirely neutral, warmed by exactly one real accent; the o
 ### Named Rules
 **The One Line Rule.** Depth is conveyed with exactly one hairline border between a card and the page behind it — never a shadow, never a second border, never a gradient edge.
 **The Dash Means Money Moved Rule.** A dashed border is the single reserved signal for a settlement (a payment between people). Every other card — expenses, items, participants — uses a solid border. This distinction is never used for anything else.
-**The One Accent Rule.** Terracotta appears in exactly two roles — the primary button and "Paid by X" — and nowhere else. A third use is drift, not reinforcement.
+**The One Accent Rule.** Terracotta appears in exactly three roles — the primary button, "Paid by X", and the split-type picker's selected state — and nowhere else. A fourth use is drift, not reinforcement.
 
 ## 3. Typography
 
@@ -178,16 +178,18 @@ Splitto has no shadow vocabulary. Depth is conveyed entirely through a single ha
 - **Warning glyph:** a bare `⚠` character in `amber-500`/`amber-600`, used inline next to a description — never a filled badge, just a small attention mark with a tooltip.
 
 ### Navigation
-- No persistent nav bar or sidebar anywhere in the app. Each page opens with a plain text back-link ("← Back to {group name}") top-left, and a single-column, mobile-first layout throughout. A one-line footer ("Splitto is free, open, and private…") plus a small Light/Dark toggle is the only persistent chrome.
+- No persistent nav bar or sidebar anywhere in the app. Each page opens with a plain text back-link ("← Back to {group name}") top-left, and a single-column, mobile-first layout throughout. A small top-right Light/Dark toggle (visible the instant any page loads, so the choice never has to wait) and a one-line footer ("Splitto is free, open, and private…") are the only persistent chrome.
 
 ### Theme Toggle
-- **Style:** a two-segment pill (Light / Dark), matching the neutral border/radius vocabulary used everywhere else — no new shape or color introduced for it.
+- **Position:** top-right of every page, in normal document flow above the page's own content — not hidden in the footer, so a first-time visitor can set their preference immediately rather than needing to scroll to find it.
+- **Style:** a two-segment pill (Light / Dark), matching the neutral border/radius vocabulary used everywhere else — no new shape or color introduced for it. Each segment is a minimum 44×44px tap target, sized for a one-handed phone grip rather than a mouse pointer.
 - **Behavior:** an explicit per-device choice stored in `localStorage`, not just a passive reflection of system preference. Defaults to system preference on a device's first visit, then remembers whatever the person picks — same "per-device, not per-account" pattern as the remembered last payer and last-visited timestamp.
 
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** spend terracotta only on the primary button and "Paid by X" — nowhere else.
+- **Do** spend terracotta only on its three documented roles (primary button, "Paid by X", split-type picker selection) — nowhere else.
+- **Do** give every tappable control at least a 44×44px target on a phone-first surface.
 - **Do** keep the semantic colors spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look — never as decoration.
 - **Do** use the dashed border exclusively for settlements; every other card stays solid.
 - **Do** convey depth with a single hairline border and a background-tone step, never a shadow.
@@ -196,5 +198,5 @@ Splitto has no shadow vocabulary. Depth is conveyed entirely through a single ha
 ### Don't:
 - **Don't** add Splitwise's busier, ad-supported feel — no toolbars, no upsell banners, no visual competition for attention against the task at hand.
 - **Don't** introduce a shadow anywhere; this system has none by design.
-- **Don't** add a second accent color, or spend terracotta anywhere beyond its two documented roles.
+- **Don't** add a second accent color, or spend terracotta anywhere beyond its three documented roles.
 - **Don't** use the dashed-border treatment for anything other than a settlement record.
