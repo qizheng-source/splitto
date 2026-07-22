@@ -71,6 +71,7 @@ export function TrendChart({
               height={HEIGHT}
               fill="transparent"
               onMouseEnter={() => setHoverIndex(i)}
+              onClick={() => setHoverIndex(i)}
             />
           ))}
           {hoveredCoord && (
