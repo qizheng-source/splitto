@@ -296,6 +296,7 @@ export default async function HistoryPage({
                           {duplicateExpenseIds.has(tx.expense.id) && (
                             <span
                               title="Might be a duplicate — same amount and day as another expense"
+                              aria-label="Might be a duplicate expense"
                               className="text-amber-500"
                             >
                               ⚠

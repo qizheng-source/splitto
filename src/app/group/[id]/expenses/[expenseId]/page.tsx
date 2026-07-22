@@ -112,11 +112,11 @@ export default async function ExpenseDetailPage({
         </div>
 
         {potentialDuplicates.length > 0 && (
-          <div className="flex flex-col gap-2 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm dark:border-amber-900 dark:bg-amber-950">
-            <span className="font-medium text-amber-800 dark:text-amber-400">
+          <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-white p-4 text-sm dark:border-zinc-800 dark:bg-zinc-900">
+            <span className="font-medium text-amber-600 dark:text-amber-500">
               ⚠ This might be a duplicate
             </span>
-            <p className="text-amber-700 dark:text-amber-500">
+            <p className="text-zinc-600 dark:text-zinc-400">
               Same amount ({formatMoney(expense.amount.toString())} {expense.currency}) was also logged
               on the same day as:
             </p>
@@ -125,12 +125,12 @@ export default async function ExpenseDetailPage({
                 <li key={dup.id}>
                   <Link
                     href={`/group/${group.id}/expenses/${dup.id}`}
-                    className="font-medium text-amber-800 underline underline-offset-2 dark:text-amber-400"
+                    className="font-medium text-zinc-700 underline underline-offset-2 dark:text-zinc-300"
                   >
                     &quot;{dup.description}&quot;
                   </Link>
                   {dup.payerNames.length > 0 && (
-                    <span className="text-amber-700 dark:text-amber-500">
+                    <span className="text-zinc-600 dark:text-zinc-400">
                       {" "}
                       — paid by {dup.payerNames.join(", ")}
                     </span>

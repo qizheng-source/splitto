@@ -485,6 +485,12 @@ export function AddExpenseForm({
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             e.g. give an adult 2 shares and a kid 1 share to split roughly 2:1.
           </p>
+          {isEditing && initialValues?.splitType === "SHARES" && (
+            <p className="text-xs text-amber-600 dark:text-amber-500">
+              Share ratios aren&apos;t saved between edits — everyone&apos;s reset to 1 share below.
+              Re-enter your ratio if this wasn&apos;t meant to be an even split.
+            </p>
+          )}
           <div className="flex flex-col gap-2">
             {shareRows.map((row) => {
               const person = people.find((p) => p.id === row.personId);

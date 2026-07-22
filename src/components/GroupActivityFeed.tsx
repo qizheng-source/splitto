@@ -81,6 +81,7 @@ export function GroupActivityFeed({ groupId, groups }: { groupId: string; groups
                         {item.isDuplicate && (
                           <span
                             title="Might be a duplicate — same amount and day as another expense"
+                            aria-label="Might be a duplicate expense"
                             className="text-amber-500"
                           >
                             ⚠
