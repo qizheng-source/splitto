@@ -102,7 +102,7 @@ export function CreateGroupForm() {
 
       <SubmitButton
         pendingText="Creating…"
-        className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+        className="mt-2 rounded-lg bg-accent px-5 py-3 text-sm font-medium text-accent-ink hover:bg-accent-hover disabled:opacity-60"
       >
         Create group
       </SubmitButton>

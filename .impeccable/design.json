@@ -4,7 +4,8 @@
   "title": "Design System: Splitto",
   "extensions": {
     "colorMeta": {
-      "ink-primary": { "role": "primary", "displayName": "Zinc Ink", "canonical": "#18181b", "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8"] },
+      "accent": { "role": "primary", "displayName": "Notebook Terracotta", "canonical": "#b8492e", "tonalRamp": ["#2a0f08", "#4a1a0f", "#6e2818", "#963a23", "#b8492e", "#d3654a", "#e8734f", "#f0a082"] },
+      "ink-primary": { "role": "secondary", "displayName": "Zinc Ink", "canonical": "#18181b", "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8"] },
       "positive": { "role": "secondary", "displayName": "Settled Green", "canonical": "#059669", "tonalRamp": ["#022c22", "#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7"] },
       "negative": { "role": "secondary", "displayName": "Owed Red", "canonical": "#dc2626", "tonalRamp": ["#450a0a", "#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5"] },
       "warning": { "role": "tertiary", "displayName": "Estimate Amber", "canonical": "#d97706", "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fcd34d"] },
@@ -33,7 +34,7 @@
       "refersTo": "button-primary",
       "description": "Main call-to-action across forms (Add expense, Save changes, Create group).",
       "html": "<button class=\"ds-btn-primary\">Add expense</button>",
-      "css": ".ds-btn-primary { background: #18181b; color: #ffffff; padding: 12px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; border: none; transition: background 0.15s; } .ds-btn-primary:hover { background: #3f3f46; } .ds-btn-primary:focus-visible { outline: 2px solid #71717a; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }"
+      "css": ".ds-btn-primary { background: #b8492e; color: #ffffff; padding: 12px 20px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; border: none; transition: background 0.15s; } .ds-btn-primary:hover { background: #963a23; } .ds-btn-primary:focus-visible { outline: 2px solid #71717a; outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }"
     },
     {
       "name": "Secondary Button",
@@ -77,21 +78,24 @@
   ],
   "narrative": {
     "northStar": "The Shared Notebook",
-    "overview": "Splitto looks like a plain paper ledger passed between friends, not a finance dashboard trying to earn your trust with polish. There is no signature color, no gradient, no shadow anywhere in the interface — every screen is built from Tailwind's default neutral (zinc) scale, plain borders, and a small, deliberate set of semantic colors used only where they carry real meaning. The system explicitly rejects Splitwise's busier, ad-supported feel: no toolbars, no upsell banners, no visual competition for attention against the actual task of logging an expense or settling up. Density is low and whitespace is generous. Cards are flat rectangles with a hairline border, nothing more — depth is never implied with a shadow, only with a change in background tone. The one structural flourish the system allows itself is a dashed border, reserved specifically for settlement records.",
+    "overview": "Splitto looks like a plain paper ledger passed between friends, not a finance dashboard trying to earn your trust with polish. There is no gradient, no shadow anywhere in the interface — every screen is built from Tailwind's default neutral (zinc) scale, one deliberate terracotta accent, and a small, restrained set of semantic colors used only where they carry real meaning. The system explicitly rejects Splitwise's busier, ad-supported feel: no toolbars, no upsell banners, no visual competition for attention against the actual task of logging an expense or settling up. Density is low and whitespace is generous. Cards are flat rectangles with a hairline border, nothing more — depth is never implied with a shadow, only with a change in background tone. The one structural flourish the system allows itself is a dashed border, reserved specifically for settlement records.",
     "keyCharacteristics": [
-      "Zinc neutral scale as the entire base palette; color is spent only on meaning, never on decoration",
+      "Zinc neutral scale as the base palette, warmed by one terracotta accent spent only on the primary action and \"who paid\"",
       "Flat by construction — no box-shadow anywhere in the codebase",
       "Solid border = expense, dashed border = settlement; the one recurring structural signal",
-      "Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app"
+      "Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app",
+      "Light/dark is an explicit per-device toggle, not just a system-preference fallback"
     ],
     "rules": [
       { "name": "The One Line Rule", "body": "Depth is conveyed with exactly one hairline border between a card and the page behind it — never a shadow, never a second border, never a gradient edge.", "section": "colors" },
       { "name": "The Dash Means Money Moved Rule", "body": "A dashed border is the single reserved signal for a settlement. Every other card uses a solid border.", "section": "colors" },
+      { "name": "The One Accent Rule", "body": "Terracotta appears in exactly two roles — the primary button and \"Paid by X\" — and nowhere else.", "section": "colors" },
       { "name": "The One Size Mostly Rule", "body": "The interface runs almost entirely on two sizes — 0.875rem for content, 0.75rem for metadata.", "section": "typography" },
       { "name": "The Flat-By-Default Rule", "body": "No component in this system ever casts a shadow. If a new component seems to need one to feel grounded, the fix is a border or a background-tone shift.", "section": "elevation" }
     ],
     "dos": [
-      "Do keep color spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look",
+      "Do spend terracotta only on the primary button and \"Paid by X\" — nowhere else",
+      "Do keep the semantic colors spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look",
       "Do use the dashed border exclusively for settlements; every other card stays solid",
       "Do convey depth with a single hairline border and a background-tone step, never a shadow",
       "Do show a spinner and disable a submit button the instant its action starts"
@@ -99,7 +103,7 @@
     "donts": [
       "Don't add Splitwise's busier, ad-supported feel — no toolbars, no upsell banners",
       "Don't introduce a shadow anywhere; this system has none by design",
-      "Don't invent a second accent color; the palette is neutral-plus-three-semantic-colors",
+      "Don't add a second accent color, or spend terracotta anywhere beyond its two documented roles",
       "Don't use the dashed-border treatment for anything other than a settlement record"
     ]
   }

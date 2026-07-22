@@ -223,7 +223,7 @@ export default async function HistoryPage({
           <div className="flex gap-2">
             <button
               type="submit"
-              className="flex-1 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+              className="flex-1 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-ink hover:bg-accent-hover"
             >
               Apply filters
             </button>
@@ -317,7 +317,7 @@ export default async function HistoryPage({
                           })}
                           {tx.expense.category ? ` · ${tx.expense.category}` : ""}
                         </span>
-                        <span>
+                        <span className="text-accent">
                           Paid by {tx.expense.payers.map((p) => p.person.name).join(", ")}
                         </span>
                       </div>

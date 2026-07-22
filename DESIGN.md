@@ -16,6 +16,12 @@ colors:
   ink-secondary-dark: "#a1a1aa"
   ink-muted: "#a1a1aa"
   ink-muted-dark: "#52525b"
+  accent: "#b8492e"
+  accent-dark: "#e8734f"
+  accent-hover: "#963a23"
+  accent-hover-dark: "#f0906f"
+  accent-ink: "#ffffff"
+  accent-ink-dark: "#241009"
   positive: "#059669"
   negative: "#dc2626"
   warning: "#d97706"
@@ -59,12 +65,12 @@ spacing:
   lg: "24px"
 components:
   button-primary:
-    backgroundColor: "{colors.ink-primary}"
-    textColor: "{colors.surface}"
+    backgroundColor: "{colors.accent}"
+    textColor: "{colors.accent-ink}"
     rounded: "{rounded.default}"
     padding: "12px 20px"
   button-primary-hover:
-    backgroundColor: "#3f3f46"
+    backgroundColor: "{colors.accent-hover}"
   button-secondary:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink-secondary}"
@@ -82,22 +88,24 @@ components:
 
 **Creative North Star: "The Shared Notebook"**
 
-Splitto looks like a plain paper ledger passed between friends, not a finance dashboard trying to earn your trust with polish. There is no signature color, no gradient, no shadow anywhere in the interface — every screen is built from Tailwind's default neutral (zinc) scale, plain borders, and a small, deliberate set of semantic colors used only where they carry real meaning (green when money is owed to you, red when you owe it, amber when something is an estimate or worth a second look). The system explicitly rejects Splitwise's busier, ad-supported feel: no toolbars, no upsell banners, no visual competition for attention against the actual task of logging an expense or settling up.
+Splitto looks like a plain paper ledger passed between friends, not a finance dashboard trying to earn your trust with polish. There is no gradient, no shadow anywhere in the interface — every screen is built from Tailwind's default neutral (zinc) scale, one deliberate terracotta accent, and a small, restrained set of semantic colors used only where they carry real meaning (green when money is owed to you, red when you owe it, amber when something is an estimate or worth a second look). The system explicitly rejects Splitwise's busier, ad-supported feel: no toolbars, no upsell banners, no visual competition for attention against the actual task of logging an expense or settling up.
 
 Density is low and whitespace is generous. Cards are flat rectangles with a hairline border, nothing more — depth is never implied with a shadow, only with a change in background tone (page background vs. card surface). The one structural flourish the system allows itself is a dashed border, reserved specifically for settlement records, so a glance down the activity feed tells expenses and payments apart without reading a single word.
 
 **Key Characteristics:**
-- Zinc neutral scale as the entire base palette; color is spent only on meaning, never on decoration
+- Zinc neutral scale as the base palette, warmed by one terracotta accent spent only on the primary action and "who paid" — never as decoration elsewhere
 - Flat by construction — no box-shadow anywhere in the codebase
 - Solid border = expense, dashed border = settlement; the one recurring structural signal
 - Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app
+- Light and dark are both explicit, user-chosen per-device states (a footer toggle), not just a system-preference fallback
 
 ## 2. Colors
 
-The palette is almost entirely neutral; the handful of non-neutral colors are semantic signals, not brand expression.
+The palette is almost entirely neutral, warmed by exactly one real accent; the other non-neutral colors are semantic signals, not brand expression.
 
 ### Primary
-- **Zinc Ink** (`#18181b` light / `#f4f4f5` dark, `ink-primary`): the primary button fill and heading text. Inverts between modes rather than staying fixed — the darkest neutral in light mode, the lightest in dark mode.
+- **Notebook Terracotta** (`#b8492e` light / `#e8734f` dark, `accent`): worn-leather-journal warmth — the one deliberate color in the system, spent on exactly two things: the primary action button (Add expense, Save changes, and similar) and the "Paid by X" line in the activity feed. Never used decoratively, never used twice as much as that.
+- **Zinc Ink** (`#18181b` light / `#f4f4f5` dark, `ink-primary`): heading and body text. Inverts between modes rather than staying fixed — the darkest neutral in light mode, the lightest in dark mode.
 
 ### Secondary
 - **Settled Green** (`#059669`, `positive`): a balance owed *to* someone, or a fully settled state. Used sparingly — text color only, never a filled background beyond the small "New" activity badge.
@@ -117,6 +125,7 @@ The palette is almost entirely neutral; the handful of non-neutral colors are se
 ### Named Rules
 **The One Line Rule.** Depth is conveyed with exactly one hairline border between a card and the page behind it — never a shadow, never a second border, never a gradient edge.
 **The Dash Means Money Moved Rule.** A dashed border is the single reserved signal for a settlement (a payment between people). Every other card — expenses, items, participants — uses a solid border. This distinction is never used for anything else.
+**The One Accent Rule.** Terracotta appears in exactly two roles — the primary button and "Paid by X" — and nowhere else. A third use is drift, not reinforcement.
 
 ## 3. Typography
 
@@ -145,10 +154,10 @@ Splitto has no shadow vocabulary. Depth is conveyed entirely through a single ha
 
 ### Buttons
 - **Shape:** 8px corner radius (`rounded-lg`) on every button, no exceptions.
-- **Primary:** solid ink fill — `#18181b` background / white text in light mode, inverted in dark mode. Padding scales with importance: 12px/20px for a primary page action (Add expense, Save changes), 8px/16px for an inline secondary action.
+- **Primary:** solid terracotta fill (`#b8492e` light / `#e8734f` dark) with ink-appropriate text (white on light, near-black on dark). Padding scales with importance: 12px/20px for a primary page action (Add expense, Save changes), 8px/16px for an inline secondary action.
 - **Secondary / Outline:** transparent fill, `1px` neutral border, secondary-ink text; hover fills lightly with the neutral-100 tone.
 - **Ghost / Link:** underlined text only, no border or fill — used for tertiary actions like "+ Add another payer".
-- **Hover / Focus:** primary darkens one step (`hover:bg-zinc-700`) in light mode, lightens one step in dark mode — a plain color shift, no shadow, no scale transform.
+- **Hover / Focus:** primary darkens one step in light mode, lightens one step in dark mode — a plain color shift, no shadow, no scale transform.
 - **Disabled / Pending:** 50–60% opacity plus an inline spinner (a small `animate-spin` ring in the button's own text color) and pending copy ("Saving…") while a server action is in flight — never a silent, unresponsive tap.
 
 ### Cards / Containers
@@ -169,12 +178,17 @@ Splitto has no shadow vocabulary. Depth is conveyed entirely through a single ha
 - **Warning glyph:** a bare `⚠` character in `amber-500`/`amber-600`, used inline next to a description — never a filled badge, just a small attention mark with a tooltip.
 
 ### Navigation
-- No persistent nav bar or sidebar anywhere in the app. Each page opens with a plain text back-link ("← Back to {group name}") top-left, and a single-column, mobile-first layout throughout. A one-line footer ("Splitto is free, open, and private…") is the only persistent chrome.
+- No persistent nav bar or sidebar anywhere in the app. Each page opens with a plain text back-link ("← Back to {group name}") top-left, and a single-column, mobile-first layout throughout. A one-line footer ("Splitto is free, open, and private…") plus a small Light/Dark toggle is the only persistent chrome.
+
+### Theme Toggle
+- **Style:** a two-segment pill (Light / Dark), matching the neutral border/radius vocabulary used everywhere else — no new shape or color introduced for it.
+- **Behavior:** an explicit per-device choice stored in `localStorage`, not just a passive reflection of system preference. Defaults to system preference on a device's first visit, then remembers whatever the person picks — same "per-device, not per-account" pattern as the remembered last payer and last-visited timestamp.
 
 ## 6. Do's and Don'ts
 
 ### Do:
-- **Do** keep color spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look — never as decoration.
+- **Do** spend terracotta only on the primary button and "Paid by X" — nowhere else.
+- **Do** keep the semantic colors spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look — never as decoration.
 - **Do** use the dashed border exclusively for settlements; every other card stays solid.
 - **Do** convey depth with a single hairline border and a background-tone step, never a shadow.
 - **Do** show a spinner and disable a submit button the instant its action starts, so a tap never feels ignored.
@@ -182,5 +196,5 @@ Splitto has no shadow vocabulary. Depth is conveyed entirely through a single ha
 ### Don't:
 - **Don't** add Splitwise's busier, ad-supported feel — no toolbars, no upsell banners, no visual competition for attention against the task at hand.
 - **Don't** introduce a shadow anywhere; this system has none by design.
-- **Don't** invent a second accent color; the palette is neutral-plus-three-semantic-colors and stays that way.
+- **Don't** add a second accent color, or spend terracotta anywhere beyond its two documented roles.
 - **Don't** use the dashed-border treatment for anything other than a settlement record.

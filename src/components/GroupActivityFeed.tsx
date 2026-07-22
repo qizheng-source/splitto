@@ -94,7 +94,7 @@ export function GroupActivityFeed({ groupId, groups }: { groupId: string; groups
                     </div>
                     <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
                       <span>{item.metaLine}</span>
-                      <span>{item.paidByLabel}</span>
+                      <span className="text-accent">{item.paidByLabel}</span>
                     </div>
                   </Link>
                 </li>

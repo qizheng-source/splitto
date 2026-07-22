@@ -1,22 +1,55 @@
 @import "tailwindcss";
 
+/* Dark mode is toggled by a .dark class on <html> (set by ThemeToggle /
+   the boot script in layout.tsx) instead of only following system
+   preference, so every existing dark: utility class in the app now
+   responds to the manual per-device choice. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --accent: #b8492e;
+  --accent-hover: #963a23;
+  --accent-ink: #ffffff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+/* Fallback for a first-time visit before any manual choice is stored. */
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --accent: #e8734f;
+    --accent-hover: #f0906f;
+    --accent-ink: #241009;
   }
+}
+
+/* Explicit per-device choice always wins over the system-preference fallback. */
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --accent: #e8734f;
+  --accent-hover: #f0906f;
+  --accent-ink: #241009;
+}
+
+:root.light {
+  --background: #ffffff;
+  --foreground: #171717;
+  --accent: #b8492e;
+  --accent-hover: #963a23;
+  --accent-ink: #ffffff;
 }
 
 body {

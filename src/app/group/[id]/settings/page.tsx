@@ -95,7 +95,7 @@ export default async function GroupSettingsPage({
 
           <SubmitButton
             pendingText="Saving…"
-            className="mt-1 self-start rounded-lg bg-zinc-900 px-5 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-60 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="mt-1 self-start rounded-lg bg-accent px-5 py-2 text-sm font-medium text-accent-ink hover:bg-accent-hover disabled:opacity-60"
           >
             Save changes
           </SubmitButton>

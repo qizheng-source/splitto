@@ -26,7 +26,7 @@ export function ShareLinkBox({ url }: { url: string }) {
         <button
           type="button"
           onClick={copyLink}
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+          className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-ink hover:bg-accent-hover"
         >
           {copied ? "Copied!" : "Copy"}
         </button>

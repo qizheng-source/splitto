@@ -153,7 +153,7 @@ export default async function GroupPage({
         <div className="flex flex-col gap-2">
           <Link
             href={`/group/${group.id}/expenses/new`}
-            className="rounded-lg bg-zinc-900 px-5 py-3.5 text-center text-sm font-semibold text-white hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
+            className="rounded-lg bg-accent px-5 py-3.5 text-center text-sm font-semibold text-accent-ink hover:bg-accent-hover"
           >
             + Add expense
           </Link>
