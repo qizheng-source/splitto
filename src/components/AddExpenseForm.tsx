@@ -158,6 +158,13 @@ export function AddExpenseForm({
     [exactRows]
   );
 
+  // Mirrors payersMatch below: once every row has a typed amount, those
+  // amounts must actually sum to the total, or the server rejects the
+  // submission — better to disable the button than let that happen after
+  // the user has already typed a description, picked a receipt, etc.
+  const exactSplitValid =
+    splitType !== "EXACT" || exactUntouchedIds.length > 0 || exactRemainderCents === 0;
+
   const exactAutoShares = useMemo(
     () =>
       exactUntouchedIds.length > 0
@@ -721,7 +728,7 @@ export function AddExpenseForm({
       </div>
 
       <SubmitButton
-        disabled={!payersMatch}
+        disabled={!payersMatch || !exactSplitValid}
         pendingText={isEditing ? "Saving…" : "Adding…"}
         className="mt-2 rounded-lg bg-zinc-900 px-5 py-3 text-sm font-medium text-white hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
       >
