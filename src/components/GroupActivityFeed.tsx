@@ -113,7 +113,7 @@ export function GroupActivityFeed({ groupId, groups }: { groupId: string; groups
                         )}
                         {item.fromToLabel}
                       </span>
-                      <span className="text-zinc-500 dark:text-zinc-500">
+                      <span className="font-semibold text-zinc-900 dark:text-zinc-100">
                         {item.amountLabel} {item.currency}
                       </span>
                     </div>
