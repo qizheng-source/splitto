@@ -47,7 +47,7 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 - DECIDED: Currency dropdowns show a country flag next to each code for faster visual scanning.
 
 ## 5. Privacy & Data Storage
-- No data selling, no ads (Spliit-style)
+- No data selling, no ads (Splitser-style)
 - Open, transparent approach to how data is handled
 - Free, no paywalls or feature-gating
 - DECIDED: Hosted, shared backend (small server + database). A group is accessed via a unique, hard-to-guess shareable link rather than a login — this is required so all members see the same live data across their own devices.
@@ -63,7 +63,7 @@ Status: APPROVED (2026-07-05) — moving to PLAN.md next.
 ## 7. UI
 - Clean, simple interface (Tricount-style)
 - DECIDED: Web app, responsive so it works well on phone browsers too (no app store install needed).
-- DECIDED: Minimal & clean visual style — lots of whitespace, simple neutral colors, Tricount/Spliit-like feel.
+- DECIDED: Minimal & clean visual style — lots of whitespace, simple neutral colors, Tricount/Splitser-like feel.
 
 ---
 ## Clarifying questions log

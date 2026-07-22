@@ -14,7 +14,7 @@ Casual groups — roommates, trip companions, friend circles — who need to tra
 
 ## Product Purpose
 
-Splitto combines the parts of Splitwise, Tricount, and Spliit that actually matter for a group tracking shared money: Splitwise's item-level splitting and spending analytics, Tricount's zero-friction account-less sharing via a single link, and Spliit's open, ad-free, non-paywalled ethos. Success looks like a group finishing a trip or a shared living arrangement with an accurate, trusted record of who owes whom, arrived at with the least possible friction along the way.
+Splitto combines the parts of Splitwise, Tricount, and Splitser that actually matter for a group tracking shared money: Splitwise's item-level splitting and spending analytics, Tricount's zero-friction account-less sharing via a single link, and Splitser's open, ad-free, non-paywalled ethos. Success looks like a group finishing a trip or a shared living arrangement with an accurate, trusted record of who owes whom, arrived at with the least possible friction along the way.
 
 ## Positioning
 

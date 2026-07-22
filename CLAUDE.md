@@ -1,7 +1,7 @@
 # Project: App Group Money Tracking (Bill-Splitting App)
 
 ## Background
-Tom is a beginner learning to build things with Claude. Building a bill-splitting app for groups (roommates, trips, friends) combining the best features of three existing apps: Splitwise, Tricount, and Spliit.
+Tom is a beginner learning to build things with Claude. Building a bill-splitting app for groups (roommates, trips, friends) combining the best features of three existing apps: Splitwise, Tricount, and Splitser.
 
 ## Target folder
 `D:\Qi Zheng\claude projects\app group money tracking`
@@ -19,7 +19,7 @@ Tom is a beginner learning to build things with Claude. Building a bill-splittin
 - Clean, simple interface
 - Good multi-currency support (useful for travel)
 
-**From Spliit:**
+**From Splitser:**
 - Open-source approach / transparent about how it works
 - Privacy-first — no data selling, no ads
 - Free with no artificial paywalls or feature-gating
