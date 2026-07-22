@@ -97,7 +97,7 @@ Density is low and whitespace is generous. Cards are flat rectangles with a hair
 - Flat by construction — no box-shadow anywhere in the codebase
 - Solid border = expense, dashed border = settlement; the one recurring structural signal
 - Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app
-- Light and dark are both explicit, user-chosen per-device states (a top-right toggle, visible the instant any page loads), not just a system-preference fallback
+- Light and dark are both explicit, user-chosen per-device states (a top-right toggle on the two entry pages), not just a system-preference fallback
 
 ## 2. Colors
 
@@ -178,18 +178,18 @@ Splitto has no shadow vocabulary. Depth is conveyed entirely through a single ha
 - **Warning glyph:** a bare `⚠` character in `amber-500`/`amber-600`, used inline next to a description — never a filled badge, just a small attention mark with a tooltip.
 
 ### Navigation
-- No persistent nav bar or sidebar anywhere in the app. Each page opens with a plain text back-link ("← Back to {group name}") top-left, and a single-column, mobile-first layout throughout. A small top-right Light/Dark toggle (visible the instant any page loads, so the choice never has to wait) and a one-line footer ("Splitto is free, open, and private…") are the only persistent chrome.
+- No persistent nav bar or sidebar anywhere in the app. Each page opens with a plain text back-link ("← Back to {group name}") top-left, and a single-column, mobile-first layout throughout. A one-line footer ("Splitto is free, open, and private…") is the only truly persistent chrome; the Light/Dark toggle appears only on the two entry pages (see Theme Toggle).
 
 ### Theme Toggle
-- **Position:** top-right of every page, in normal document flow above the page's own content — not hidden in the footer, so a first-time visitor can set their preference immediately rather than needing to scroll to find it.
-- **Style:** a two-segment pill (Light / Dark), matching the neutral border/radius vocabulary used everywhere else — no new shape or color introduced for it. Each segment is a minimum 44×44px tap target, sized for a one-handed phone grip rather than a mouse pointer.
+- **Position:** top-right of the home page and the group page only — the two places someone actually arrives at, not every task screen reached from them. The preference is global (`localStorage` + a class on `<html>`) and applies everywhere regardless of whether the control is visible on that particular page, so repeating it on every screen would just be visual noise for a setting most people touch once.
+- **Style:** a compact two-segment pill (Light / Dark), matching the neutral border/radius vocabulary used everywhere else — no new shape or color introduced for it. Deliberately not sized to the usual 44×44px tap-target guideline: that guideline is for frequent or high-stakes controls, and this is neither (rarely touched, fully reversible) — making it bigger would compete for attention against the actual task, which the rest of this system is built to avoid.
 - **Behavior:** an explicit per-device choice stored in `localStorage`, not just a passive reflection of system preference. Defaults to system preference on a device's first visit, then remembers whatever the person picks — same "per-device, not per-account" pattern as the remembered last payer and last-visited timestamp.
 
 ## 6. Do's and Don'ts
 
 ### Do:
 - **Do** spend terracotta only on its three documented roles (primary button, "Paid by X", split-type picker selection) — nowhere else.
-- **Do** give every tappable control at least a 44×44px target on a phone-first surface.
+- **Do** size a tappable control to how it's actually used: 44×44px for frequent or high-stakes actions, a smaller compact size is fine for a rarely-touched, reversible setting like the theme toggle.
 - **Do** keep the semantic colors spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look — never as decoration.
 - **Do** use the dashed border exclusively for settlements; every other card stays solid.
 - **Do** convey depth with a single hairline border and a background-tone step, never a shadow.

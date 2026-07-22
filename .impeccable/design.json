@@ -84,7 +84,7 @@
       "Flat by construction — no box-shadow anywhere in the codebase",
       "Solid border = expense, dashed border = settlement; the one recurring structural signal",
       "Generous whitespace, small type scale, no dense data-table aesthetic despite being a money app",
-      "Light/dark is an explicit per-device toggle at top-right of every page, not just a system-preference fallback"
+      "Light/dark is an explicit per-device toggle, shown top-right only on the two entry pages, not just a system-preference fallback"
     ],
     "rules": [
       { "name": "The One Line Rule", "body": "Depth is conveyed with exactly one hairline border between a card and the page behind it — never a shadow, never a second border, never a gradient edge.", "section": "colors" },
@@ -95,7 +95,7 @@
     ],
     "dos": [
       "Do spend terracotta only on its three documented roles (primary button, \"Paid by X\", split-type picker selection) — nowhere else",
-      "Do give every tappable control at least a 44x44px target on a phone-first surface",
+      "Do size a tappable control to how it's actually used: 44x44px for frequent/high-stakes actions, compact is fine for a rarely-touched reversible setting",
       "Do keep the semantic colors spent only on meaning: green for owed-to-you, red for owed-by-you, amber for an estimate or a second look",
       "Do use the dashed border exclusively for settlements; every other card stays solid",
       "Do convey depth with a single hairline border and a background-tone step, never a shadow",

@@ -7,6 +7,7 @@ import { formatMoney } from "@/lib/money";
 import { UndoToast } from "@/components/UndoToast";
 import { findDuplicateExpenseIds } from "@/lib/duplicates";
 import { GroupActivityFeed, type FeedDateGroup, type FeedItem } from "@/components/GroupActivityFeed";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default async function GroupPage({
   params,
@@ -143,6 +144,9 @@ export default async function GroupPage({
   return (
     <div className="flex flex-1 flex-col items-center bg-zinc-50 px-6 py-8 dark:bg-black sm:py-16">
       <div className="flex w-full max-w-md flex-col gap-6">
+        <div className="flex justify-end">
+          <ThemeToggle />
+        </div>
         <div className="flex flex-col gap-1 text-center">
           <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">{group.name}</h1>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,9 +32,6 @@ export default function RootLayout({
         <Script id="theme-boot" strategy="beforeInteractive">
           {`(function(){try{var s=localStorage.getItem("splitto:theme");var d=s?s==="dark":window.matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.classList.toggle("dark",d);document.documentElement.classList.toggle("light",!d);}catch(e){}})();`}
         </Script>
-        <div className="flex justify-end px-4 py-2 sm:px-6">
-          <ThemeToggle />
-        </div>
         {children}
         <footer className="bg-zinc-50 px-6 py-4 text-center dark:bg-black">
           <p className="text-xs text-zinc-400 dark:text-zinc-600">

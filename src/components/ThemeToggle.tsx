@@ -29,7 +29,7 @@ export function ThemeToggle() {
   if (isDark === null) return null;
 
   return (
-    <div className="inline-flex gap-1 rounded-lg border border-zinc-300 p-1 dark:border-zinc-700">
+    <div className="inline-flex gap-0.5 rounded-lg border border-zinc-300 p-0.5 dark:border-zinc-700">
       <button
         type="button"
         onClick={() => {
@@ -37,7 +37,7 @@ export function ThemeToggle() {
           setIsDark(false);
         }}
         aria-pressed={!isDark}
-        className={`min-h-11 min-w-11 rounded-md px-4 text-sm font-medium ${
+        className={`rounded-md px-2.5 py-1 text-xs font-medium ${
           !isDark
             ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
             : "text-zinc-500 dark:text-zinc-400"
@@ -52,7 +52,7 @@ export function ThemeToggle() {
           setIsDark(true);
         }}
         aria-pressed={isDark}
-        className={`min-h-11 min-w-11 rounded-md px-4 text-sm font-medium ${
+        className={`rounded-md px-2.5 py-1 text-xs font-medium ${
           isDark
             ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
             : "text-zinc-500 dark:text-zinc-400"
