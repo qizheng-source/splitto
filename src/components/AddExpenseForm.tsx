@@ -668,7 +668,7 @@ export function AddExpenseForm({
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-lg border border-dashed border-zinc-300 p-4 dark:border-zinc-700">
+      <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
         <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Receipt photo</span>
         <input type="hidden" name="existingReceiptUrl" value={existingReceiptUrl} />
         <input

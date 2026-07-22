@@ -38,7 +38,7 @@ export function ExpenseActionsMenu({
         ⋮
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-10 mt-1 flex w-28 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white py-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+        <div className="absolute right-0 top-full z-10 mt-1 flex w-28 flex-col overflow-hidden rounded-lg border border-zinc-200 bg-white py-1 dark:border-zinc-700 dark:bg-zinc-900">
           <Link
             href={`/group/${groupId}/expenses/${expenseId}/edit`}
             className="px-3 py-1.5 text-left text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800"

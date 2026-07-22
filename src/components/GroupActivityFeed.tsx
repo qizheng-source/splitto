@@ -73,7 +73,7 @@ export function GroupActivityFeed({ groupId, groups }: { groupId: string; groups
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 font-medium text-zinc-900 dark:text-zinc-100">
                         {isNew(item.createdAtIso) && (
-                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
                             New
                           </span>
                         )}
@@ -106,7 +106,7 @@ export function GroupActivityFeed({ groupId, groups }: { groupId: string; groups
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5 font-medium text-zinc-900 dark:text-zinc-100">
                         {isNew(item.createdAtIso) && (
-                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
+                          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400">
                             New
                           </span>
                         )}

@@ -91,7 +91,7 @@ export function TrendChart({
         </svg>
         {hovered && hoveredCoord && (
           <div
-            className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-800 shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+            className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded-md border border-zinc-200 bg-white px-2 py-1 text-xs text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
             style={{ left: `${(hoveredCoord.x / WIDTH) * 100}%`, top: `${(hoveredCoord.y / HEIGHT) * 100}%` }}
           >
             {hovered.label}: {fromCents(hovered.cents)} {currency}

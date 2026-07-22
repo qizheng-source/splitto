@@ -41,7 +41,7 @@ export function UndoToast({
   const idFieldName = type === "expense" ? "expenseId" : "settlementId";
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-md items-center justify-between gap-3 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+    <div className="fixed inset-x-4 bottom-4 z-20 mx-auto flex max-w-md items-center justify-between gap-3 rounded-lg border border-zinc-300 bg-white px-4 py-3 text-sm dark:border-zinc-700 dark:bg-zinc-900">
       <span className="text-zinc-800 dark:text-zinc-200">{label} deleted.</span>
       <div className="flex items-center gap-3">
         <form action={action}>
