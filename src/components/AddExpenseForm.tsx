@@ -584,6 +584,7 @@ export function AddExpenseForm({
                   <button
                     type="button"
                     onClick={() => removeItem(index)}
+                    aria-label={`Remove item ${index + 1}`}
                     className="rounded-lg border border-zinc-300 px-2 text-sm text-zinc-500 dark:border-zinc-700"
                   >
                     ✕
@@ -646,6 +647,7 @@ export function AddExpenseForm({
                 <button
                   type="button"
                   onClick={() => removePayer(index)}
+                  aria-label={`Remove payer ${index + 1}`}
                   className="rounded-lg border border-zinc-300 px-2 text-sm text-zinc-500 dark:border-zinc-700"
                 >
                   ✕
