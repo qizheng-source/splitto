@@ -48,7 +48,7 @@ export default async function ExpenseDetailPage({
             ← Back
           </Link>
           <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Expense</span>
-          <ExpenseActionsMenu groupId={group.id} expenseId={expense.id} />
+          <ExpenseActionsMenu groupId={group.id} expenseId={expense.id} description={expense.description} />
         </div>
 
         <div className="flex flex-col gap-1 rounded-lg border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-900">

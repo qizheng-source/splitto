@@ -5,7 +5,15 @@ import { useEffect, useRef, useState } from "react";
 import { deleteExpense } from "@/app/actions";
 import { SubmitButton } from "@/components/SubmitButton";
 
-export function ExpenseActionsMenu({ groupId, expenseId }: { groupId: string; expenseId: string }) {
+export function ExpenseActionsMenu({
+  groupId,
+  expenseId,
+  description,
+}: {
+  groupId: string;
+  expenseId: string;
+  description: string;
+}) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +49,7 @@ export function ExpenseActionsMenu({ groupId, expenseId }: { groupId: string; ex
           <form
             action={deleteExpense}
             onSubmit={(e) => {
-              if (!confirm("Delete this expense? This can't be undone.")) {
+              if (!confirm(`Delete "${description}"? You can restore it later from Deleted items.`)) {
                 e.preventDefault();
               }
             }}

@@ -35,7 +35,11 @@ export default async function SettlementDetailPage({
             ← Back
           </Link>
           <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">Settlement</span>
-          <SettlementActionsMenu groupId={group.id} settlementId={settlement.id} />
+          <SettlementActionsMenu
+            groupId={group.id}
+            settlementId={settlement.id}
+            label={`${settlement.fromPerson.name} → ${settlement.toPerson.name}`}
+          />
         </div>
 
         <div className="flex flex-col items-center gap-2 rounded-lg border border-zinc-200 bg-white p-6 text-center dark:border-zinc-800 dark:bg-zinc-900">

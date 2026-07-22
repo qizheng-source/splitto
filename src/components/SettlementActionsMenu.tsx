@@ -8,9 +8,11 @@ import { SubmitButton } from "@/components/SubmitButton";
 export function SettlementActionsMenu({
   groupId,
   settlementId,
+  label,
 }: {
   groupId: string;
   settlementId: string;
+  label: string;
 }) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,7 @@ export function SettlementActionsMenu({
           <form
             action={deleteSettlement}
             onSubmit={(e) => {
-              if (!confirm("Delete this settlement? This can't be undone.")) {
+              if (!confirm(`Delete "${label}"? You can restore it later from Deleted items.`)) {
                 e.preventDefault();
               }
             }}
